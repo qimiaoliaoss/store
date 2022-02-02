@@ -20,8 +20,8 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 header = config['account']['header']
 cookie = config['account']['ck']
-tid = config['account']['tid']
-uid = config['account']['uid']
+tid = config['target']['tid']
+uid = config['target']['uid']
 header = json.loads(header)
 cookie = json.loads(cookie)
 print(type(cookie))
