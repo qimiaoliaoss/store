@@ -46,7 +46,7 @@ tid = "30607982"
 uid = "6818580"
 urllib3.disable_warnings()
 
-print(basedir, father_path)
+print(basedir, father_path, path, time_path, status_path)
 header = json.loads(header)
 cookie = json.loads(cookie)
 key = json.loads(key)
