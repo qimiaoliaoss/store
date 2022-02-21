@@ -1,1 +1,5 @@
-code/config.ini
+/.idea/
+/.settings/
+/.vscode/
+/bin/
+code/nga/config.ini
