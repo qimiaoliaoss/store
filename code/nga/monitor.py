@@ -22,7 +22,7 @@ before_url = "https://bbs.nga.cn/"
 config = configparser.ConfigParser()
 basedir = os.path.abspath(os.path.dirname(__file__))
 father_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-config_path = basedir + '\config.ini'
+config_path = basedir + '/config.ini'
 print(config_path)
 config.read(config_path, encoding="utf-8")
 header = config['account']['header']
@@ -37,9 +37,9 @@ if platform_sys == 'Windows':
     time_path = "time.txt"
     status_path = "../status.txt"
 elif platform_sys == 'Linux':
-    path = basedir + "\page.txt"
-    time_path = basedir + "\\time.txt"
-    status_path = father_path + "\status.txt"
+    path = basedir + "/page.txt"
+    time_path = basedir + "/time.txt"
+    status_path = father_path + "/status.txt"
 # 帖子ID
 tid = "30607982"
 # 楼主ID
