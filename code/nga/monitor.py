@@ -21,7 +21,7 @@ requests.packages.urllib3.disable_warnings()
 before_url = "https://bbs.nga.cn/"
 config = configparser.ConfigParser()
 basedir = os.path.abspath(os.path.dirname(__file__))
-father_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+father_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 config_path = basedir + '/config.ini'
 print(config_path)
 config.read(config_path, encoding="utf-8")
