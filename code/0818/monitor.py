@@ -1,0 +1,130 @@
+# -*- coding: utf-8 -*-
+# @Time : 2022/6/15 12:13
+# @Author : Losir
+# @FileName: monitor.py
+# @Software: PyCharm
+
+import requests
+import json
+from lxml import etree
+import platform
+import time
+
+requests.packages.urllib3.disable_warnings()
+
+def get_proxy():
+    return requests.get("https://proxy.ionssource.cn/get/").json()
+
+
+def delete_proxy(proxy):
+    requests.get("https://proxy.ionssource.cn/delete/?proxy={}".format(proxy))
+
+
+def get_HTML(url1):
+    retry_count = 3
+    proxy = get_proxy().get("proxy")
+    while retry_count > 0:
+        try:
+            html = requests.get(url1, proxies={"http": "http://{}".format(proxy)}, verify=False,
+                                timeout=3)
+            # 使用代理访问
+            print("查询成功")
+            return html
+        except Exception as e:
+            result = 'Except：' + str(e) + "Line：" + str(e.__traceback__.tb_lineno)
+            print(result)
+            retry_count -= 1
+    # 删除代理池中代理
+    err = "error"
+    delete_proxy(proxy)
+    return err
+
+
+def get_target(url1):
+    try:
+        with open(path, 'r+', encoding='utf-8') as f:
+            old = f.readlines()
+            for i in range(len(old)):
+                old[i] = old[i].replace('\n', '')
+            print(old)
+            res = get_HTML(url1)
+            # print(res.content.decode('GBK'))
+            if res != 'error' and res.status_code == 200:
+                html = res.content.decode('GBK')
+                et_html = etree.HTML(html)
+                title = et_html.xpath('//*[@id="redtag"]/a')
+                print(title)
+                for i in range(len(title)):
+                    tl = title[i].attrib.get('title')
+                    dz = 'http://www.0818tuan.com' + title[i].attrib.get('href')
+                    # if ('京东' in tl or '京东' in tl or '建行' in tl) and tl not in old:
+                    if (any(list_ele in tl for list_ele in list)) and tl not in old:
+                        print('%s 地址：%s' % (tl, dz))
+                        f.write(tl + '\n')
+                        # notify(tl, dz)
+                        new = tl + '\n' + dz
+                        corp_id = 'wwf04f95d8867721ad'
+                        corp_secret = 'bFxgjAOTrTokZke7FYATo7kiKVtcwZb_tU6bI6epLxM'
+                        agent_id = '1000003'
+                        access_token, expires_in = get_access_token(corp_id, corp_secret)
+                        wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
+            else:
+                print('路上过于拥堵')
+    except Exception as e:
+        result = 'Except：' + str(e) + "Line：" + str(e.__traceback__.tb_lineno)
+        print(result)
+
+
+def notify(tl, new):
+    api = "https://sctapi.ftqq.com/SCT14710Tb1DiNZ09b0Wdg9wSh9DD6E2H.send"
+    title = '有线报'
+    content = '%s 地址：%s' % (tl, new)
+    data = {
+        "text": title,
+        "desp": content
+    }
+    req = requests.post(api, verify=False, timeout=10, data=data).content.decode('utf-8')
+    print(req)
+
+
+def get_access_token(corp_id, corp_secret):
+    resp = requests.get(f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corp_id}&corpsecret={corp_secret}')
+    js = json.loads(resp.text)
+    print(js)
+    if js["errcode"] == 0:
+        access_token = js["access_token"]
+        expires_in = js["expires_in"]
+        return access_token, expires_in
+
+
+def wechat_push_text(agent_id, access_token, message):
+    data = {
+        "touser": "@all",
+        "msgtype": 'text',
+        "agentid": agent_id,
+        "text": {
+            "content": message
+        },
+        "safe": 0,
+        "enable_id_trans": 0,
+        "enable_duplicate_check": 0,
+        "duplicate_check_interval": 1800
+    }
+    resp = requests.post(f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}', json=data)
+    js = json.loads(resp.text)
+    print(js)
+    if js["errcode"] == 0:
+        return js
+
+
+if __name__ == '__main__':
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    print('-------运行时间：{}'.format(now) + '-------')
+    list = ['大水', '建行', '建设银行',]
+    platform_sys = platform.system()
+    if platform_sys == 'Windows':
+        path = "xb.txt"
+    elif platform_sys == 'Linux':
+        path = "/root/0818/xb.txt"
+    url = 'http://www.0818tuan.com/list-1-0.html'
+    get_target(url)
