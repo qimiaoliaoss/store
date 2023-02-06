@@ -2,4 +2,9 @@
 /.settings/
 /.vscode/
 /bin/
+code/mood/
+code/tgbot/
+code/nga/kucun.py
+code/nga/monitor_single.py
+code/nga/singel.py
 code/nga/config.ini
