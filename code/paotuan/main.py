@@ -56,9 +56,9 @@ def judge_skill():
             return cast
         elif cast == 4 and roll() <= 30:
             return cast
-        elif cast == 5 and roll() <= 30:
+        elif cast == 5 and roll() <= 10:
             return cast
-        elif cast == 6 and roll() <= 80:
+        elif cast == 6 and roll() <= 70:
             return cast
         else:
             return False
@@ -126,7 +126,7 @@ def player():
 
 
 def combat(mobs_hp):
-    global floor, hp, mp, att, att_flag, mage_6_count
+    global floor, hp, mp, att, att_flag, mage_5_count
     skill_flag = judge_use_skill()
     # print(skill_flag)
     if skill_flag:
@@ -190,12 +190,12 @@ def combat(mobs_hp):
             mp -= 80
             print("叽里咕噜，您用出了%s！！！，直接把怪秒了，牛逼！剩余法力值%d" % (mage_skill[skill_flag], mp))
         elif job == '2' and skill_flag == 5 and mp // 80 != 0:
-            mage_6_count = 3
+            mage_5_count = 3
             mp -= 80
             print("叽里咕噜，您用出了%s！！！，在接下来三个房间里的战斗将会拥有恢复生命值和增加攻击力的buff，剩余法力值%d" % (mage_skill[skill_flag], mp))
         elif job == '2' and skill_flag == 6:
-            hp += 30
-            mp += 25
+            hp += 5
+            mp += 20
             print("你从百宝袋里掏出来了%s，生命值恢复至%d，法力值恢复至%d" % (mage_skill[skill_flag], hp, mp))
         elif job == '2' and not skill_flag:
             print("你尝试搓法术，但你上课不认真，失败了呗")
@@ -225,7 +225,7 @@ def mobs_combat(mobs_att):
 
 
 def floors():
-    global floor, hp, mp, att, mage_6_count
+    global floor, hp, mp, att, mage_5_count
     now = 1
     kill = 0
     while now <= floor:
@@ -233,13 +233,14 @@ def floors():
         boss_cut = random.randint(1, mobs_num)
         print("开始闯关第%d层，本层共有%d只怪，第%d个为Boss房，愿风指引你" % (now, mobs_num, boss_cut))
         for i in range(1, mobs_num + 1):
-            if mage_6_count > 0:
-                hp_mage_5_cut = random.randint(15, 30)
-                att_mage_5_cut = random.randint(1, 5)
+            if mage_5_count > 0:
+                hp_mage_5_cut = random.randint(10, 30)
+                att_mage_5_cut = random.randint(1, 3)
                 hp += hp_mage_5_cut
                 att += att_mage_5_cut
-                mage_6_count -= 1
-                print("触发了大治疗术的效果，生命值恢复%d点，攻击力上升%d点，buff效果还剩%d个房间" % (hp_mage_5_cut, att_mage_5_cut, mage_6_count))
+                mage_5_count -= 1
+                print("触发了大治疗术的效果，生命值恢复%d点，攻击力上升%d点，buff效果还剩%d个房间" %
+                      (hp_mage_5_cut, att_mage_5_cut, mage_5_count))
             if now < 11:
                 span_level = 1
             else:
@@ -320,7 +321,8 @@ def debug():
 
 
 def start():
-    global hp, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_6_count
+    global hp, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
+    mage_5_count = 0
     hp = 100
     mp = 100
     att = 10
@@ -342,7 +344,7 @@ def start():
 
 
 if __name__ == "__main__":
-    global hp, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_6_count
+    global hp, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
     # debug()
     # hp = 100
     # mp = 100
