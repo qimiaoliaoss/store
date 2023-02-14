@@ -69,7 +69,7 @@ def judge_skill():
 def judge_use_skill():
     global job, percent
     if job == '1':
-        percent = 30
+        percent = 60
     elif job == '2':
         percent = 90
     else:
@@ -97,20 +97,22 @@ def input_player():
 
 
 def player():
-    global job, hp, att, mp, percent
+    global job, hp, hp_limit, att, mp, percent
     print('正在生成人物属性')
     if job == '1':
         # print("战士开局")
-        hp = 120
-        att = random.randint(10, 20)
+        hp_limit = 200
+        hp = hp_limit
+        att = random.randint(15, 25)
         mp = 80
-        if att <= 13:
+        if att <= 18:
             print('你的运气有够叼差的，下次Roll属性前记得洗洗手嗷，你这攻击力很弱诶')
-        elif att == 20:
+        elif att == 25:
             print('运气爆表！攻击力被你Roll满了！')
     elif job == '2':
         # print("法师开局")
-        hp = 80
+        hp_limit = 80
+        hp = hp_limit
         att = random.randint(5, 12)
         mp = random.randint(100, 120)
         if mp <= 105:
@@ -118,6 +120,7 @@ def player():
         elif mp == 120:
             print('运气爆表！法力值被你Roll满了！')
     elif job == '3':
+        hp = hp_limit
         print("无用开局")
     else:
         print("请输入规定数字")
@@ -126,7 +129,7 @@ def player():
 
 
 def combat(mobs_hp):
-    global floor, hp, mp, att, att_flag, mage_5_count
+    global floor, hp, hp_limit, mp, att, att_flag, mage_5_count
     skill_flag = judge_use_skill()
     # print(skill_flag)
     if skill_flag:
@@ -139,11 +142,18 @@ def combat(mobs_hp):
             print("运气爆表！你用出了传说技能%s，怪物血量直接掉至%d点，爆杀！剩余法力值%d" % (warrior_skill[skill_flag], mobs_hp, mp))
         elif job == '1' and skill_flag == 2 and mp // 40 != 0:
             if hp < 16:
+                hp += 30
                 att += 15
                 mp -= 40
                 print("你使用了技能%s，攻击力提升至%d，希望这能有用。剩余法力值%d" % (warrior_skill[skill_flag], att, mp))
             else:
-                print("你本来想使用技能%s，但是你似乎还没把自己逼到绝境，下次请早嗷" % (warrior_skill[skill_flag]))
+                if hp + 10 <= hp_limit:
+                    hp += 10
+                    print("你本来想使用技能%s，但是你似乎还没把自己逼到绝境，浅回10血意思一下" % (warrior_skill[skill_flag]))
+                else:
+                    tmp = hp_limit - hp
+                    hp = hp_limit
+                    print("你本来想使用技能%s，但是你似乎还没把自己逼到绝境，浅回%d血意思一下" % (warrior_skill[skill_flag], tmp))
         elif job == '1' and skill_flag == 3 and mp // 80 != 0:
             tmp_cut_heal = random.randint(20, 40)
             hp -= tmp_cut_heal
@@ -153,15 +163,25 @@ def combat(mobs_hp):
                   (warrior_skill[skill_flag], att, hp, mp))
         elif job == '1' and skill_flag == 4 and mp // 20 != 0:
             tmp_cut_heal = random.randint(10, 20)
-            hp += tmp_cut_heal
+            if hp + tmp_cut_heal > hp_limit:
+                hp = hp_limit
+            else:
+                hp += tmp_cut_heal
             mp -= 20
             print("你使用了技能%s，恢复了%d点生命值，现在你还有%d点血，剩余法力值%d" %
                   (warrior_skill[skill_flag], tmp_cut_heal, hp, mp))
         elif job == '1' and skill_flag == 5:
-            hp += (mp/2)
+            tmp_mp_to_hp = mp / 2
+            if hp + tmp_mp_to_hp > hp_limit:
+                hp_limit = hp + tmp_mp_to_hp
+                hp = hp_limit
+                print("你发动了%s，清空了法力并将一半转换为鲜血，血量上限提升至%d，亏损这么多还桀桀的笑简直发癫，现在还有%d血" %
+                      (warrior_skill[skill_flag], hp_limit, hp))
+            else:
+                hp += tmp_mp_to_hp
+                print("你发动了%s，清空了法力并将一半转换为鲜血，亏损这么多还桀桀的笑简直发癫，现在还有%d血" %
+                      (warrior_skill[skill_flag], hp))
             mp -= mp
-            print("你发动了%s，将法力转换为鲜血的过程中损失了一半数值，还桀桀的笑简直发癫，现在还有%d血" %
-                  (warrior_skill[skill_flag], hp))
         elif job == '1' and skill_flag == 6 and mp // 15 != 0:
             att_flag = False
             mp -= 15
@@ -225,7 +245,7 @@ def mobs_combat(mobs_att):
 
 
 def floors():
-    global floor, hp, mp, att, mage_5_count
+    global floor, hp, hp_limit, mp, att, mage_5_count
     now = 1
     kill = 0
     while now <= floor:
@@ -307,10 +327,14 @@ def floors():
                     back_heal = random.randint(1, 30)
                     back_mp = random.randint(1, 30)
                 print("算你好运，通过一个，神秘力量为您回复%d点血量和%d点魔力" % (back_heal, back_mp))
-                hp += back_heal
+                if hp + back_heal > hp_limit:
+                    hp = hp_limit
+                else:
+                    hp += back_heal
                 mp += back_mp
                 kill += 1
-                print("------------\n职业：%s\n生命值：%d\n魔力值：%d\n攻击力：%d\n------------" % (job_list[job], hp, mp, att))
+                print("------------\n职业：%s\n生命值：%d/%d\n魔力值：%d\n攻击力：%d\n------------" %
+                      (job_list[job], hp, hp_limit, mp, att))
                 # time.sleep(3)
         now += 1
 
@@ -321,9 +345,9 @@ def debug():
 
 
 def start():
-    global hp, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
+    global hp, hp_limit, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
     mage_5_count = 0
-    hp = 100
+    hp_limit = 100
     mp = 100
     att = 10
     job = ''
@@ -344,23 +368,5 @@ def start():
 
 
 if __name__ == "__main__":
-    global hp, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
-    # debug()
-    # hp = 100
-    # mp = 100
-    # att = 10
-    # job = ''
-    # exp = 0
-    # level = 1
-    # percent = 0
-    # floor = random.randint(1, 100)
-    # print('本次地牢共有%d层，祝你好运' % floor)
-    # job_list = {'1': "战士", '2': '法师', '3': '无用之人'}
-    # warrior_skill = {1: '枪出如龙', 2: '穷途末路', 3: '爆种', 4: '强身健体', 5: ''}
-    # mage_skill = {1: '火冲', 2: '寒冰箭', 3: '火球术', 4: '大字爆', 5: '近战法师', 6: '法力之泉'}
-    # input_player()
-    # player()
-    # pass_floors, kill_mobs = floors()
-    # print("本次共闯过%d层，击杀%d只跟你同样有爹有妈的生物，欢迎下次再来" % (pass_floors, kill_mobs))
+    global hp, hp_limit, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
     start()
-    # app.run(debug=True, port=8080)
