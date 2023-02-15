@@ -97,14 +97,15 @@ def input_player():
 
 
 def player():
-    global job, hp, hp_limit, att, mp, percent
+    global job, hp, hp_limit, att, mp, mp_limit, percent
     print('正在生成人物属性')
     if job == '1':
         # print("战士开局")
         hp_limit = 200
         hp = hp_limit
         att = random.randint(15, 25)
-        mp = 80
+        mp_limit = 80
+        mp = mp_limit
         if att <= 18:
             print('你的运气有够叼差的，下次Roll属性前记得洗洗手嗷，你这攻击力很弱诶')
         elif att == 25:
@@ -114,22 +115,25 @@ def player():
         hp_limit = 80
         hp = hp_limit
         att = random.randint(5, 12)
-        mp = random.randint(100, 120)
+        mp_limit = random.randint(100, 120)
+        mp = mp_limit
         if mp <= 105:
             print('你的运气有够叼差的，下次Roll属性前记得洗洗手嗷，你这法力值够都不看的啦，有够弱的齁')
         elif mp == 120:
             print('运气爆表！法力值被你Roll满了！')
     elif job == '3':
         hp = hp_limit
+        mp = mp_limit
         print("无用开局")
     else:
         print("请输入规定数字")
         input_player()
-    print("------------\n职业：%s\n生命值：%d\n魔力值：%d\n攻击力：%d\n------------" % (job_list[job], hp, mp, att))
+    print("------------\n职业：%s\n生命值：%d/%d\n魔力值：%d/%d\n攻击力：%d\n------------" %
+          (job_list[job], hp, hp_limit, mp, mp_limit, att))
 
 
 def combat(mobs_hp):
-    global floor, hp, hp_limit, mp, att, att_flag, mage_5_count
+    global floor, hp, hp_limit, mp, mp_limit, att, att_flag, mage_5_count
     skill_flag = judge_use_skill()
     # print(skill_flag)
     if skill_flag:
@@ -215,7 +219,10 @@ def combat(mobs_hp):
             print("叽里咕噜，您用出了%s！！！，在接下来三个房间里的战斗将会拥有恢复生命值和增加攻击力的buff，剩余法力值%d" % (mage_skill[skill_flag], mp))
         elif job == '2' and skill_flag == 6:
             hp += 5
-            mp += 20
+            if mp + 20 >= mp_limit:
+                mp = mp_limit
+            else:
+                mp += 20
             print("你从百宝袋里掏出来了%s，生命值恢复至%d，法力值恢复至%d" % (mage_skill[skill_flag], hp, mp))
         elif job == '2' and not skill_flag:
             print("你尝试搓法术，但你上课不认真，失败了呗")
@@ -333,8 +340,8 @@ def floors():
                     hp += back_heal
                 mp += back_mp
                 kill += 1
-                print("------------\n职业：%s\n生命值：%d/%d\n魔力值：%d\n攻击力：%d\n------------" %
-                      (job_list[job], hp, hp_limit, mp, att))
+                print("------------\n职业：%s\n生命值：%d/%d\n魔力值：%d/%d\n攻击力：%d\n------------" %
+                      (job_list[job], hp, hp_limit, mp, mp_limit, att))
                 # time.sleep(3)
         now += 1
 
@@ -345,10 +352,10 @@ def debug():
 
 
 def start():
-    global hp, hp_limit, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
+    global hp, hp_limit, mp, mp_limit, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
     mage_5_count = 0
     hp_limit = 100
-    mp = 100
+    mp_limit = 100
     att = 10
     job = ''
     exp = 0
@@ -368,5 +375,5 @@ def start():
 
 
 if __name__ == "__main__":
-    global hp, hp_limit, mp, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
+    global hp, hp_limit, mp, mp_limit, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
     start()
