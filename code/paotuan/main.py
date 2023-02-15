@@ -263,7 +263,10 @@ def floors():
             if mage_5_count > 0:
                 hp_mage_5_cut = random.randint(10, 30)
                 att_mage_5_cut = random.randint(1, 3)
-                hp += hp_mage_5_cut
+                if hp + hp_mage_5_cut > hp_limit:
+                    hp = hp_limit
+                else:
+                    hp += hp_mage_5_cut
                 att += att_mage_5_cut
                 mage_5_count -= 1
                 print("触发了大治疗术的效果，生命值恢复%d点，攻击力上升%d点，buff效果还剩%d个房间" %
@@ -338,7 +341,10 @@ def floors():
                     hp = hp_limit
                 else:
                     hp += back_heal
-                mp += back_mp
+                if mp + back_mp > mp_limit:
+                    mp = mp_limit
+                else:
+                    mp += back_mp
                 kill += 1
                 print("------------\n职业：%s\n生命值：%d/%d\n魔力值：%d/%d\n攻击力：%d\n------------" %
                       (job_list[job], hp, hp_limit, mp, mp_limit, att))
