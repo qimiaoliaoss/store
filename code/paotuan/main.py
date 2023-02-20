@@ -252,7 +252,7 @@ def mobs_combat(mobs_att):
 
 
 def floors():
-    global floor, hp, hp_limit, mp, att, mage_5_count
+    global floor, hp, hp_limit, mp, mp_limit, att, mage_5_count, exp, need_exp, level
     now = 1
     kill = 0
     while now <= floor:
@@ -271,6 +271,8 @@ def floors():
                 mage_5_count -= 1
                 print("触发了大治疗术的效果，生命值恢复%d点，攻击力上升%d点，buff效果还剩%d个房间" %
                       (hp_mage_5_cut, att_mage_5_cut, mage_5_count))
+            else:
+                pass
             if now < 11:
                 span_level = 1
             else:
@@ -282,7 +284,7 @@ def floors():
                 mobs_att = int(random.randint(2, 6) * span_level)
                 print("------------\n当前：小怪\n生命值：%d\n魔力值：%d\n攻击力：%d\n------------" %
                       (mobs_hp, mobs_mp, mobs_att))
-            elif i == boss_cut:
+            else:
                 mobs_hp = int(random.randint(40, 60) * span_level)
                 mobs_mp = int(random.randint(30, 60) * span_level)
                 mobs_att = int(random.randint(6, 10) * span_level)
@@ -294,12 +296,6 @@ def floors():
                 # 怪物先攻
                 if roll_tmp <= 50:
                     if judge():
-                        # if judge_crit():
-                        #     hp = hp - 2 * mobs_att
-                        #     print("怪物对你造成了%d点暴击伤害(你还有%d血)" % (2 * mobs_att, hp))
-                        # else:
-                        #     hp = hp - mobs_att
-                        #     print("怪物对你造成了%d点伤害(你还有%d血)" % (mobs_att, hp))
                         mobs_combat(mobs_att)
                     else:
                         print("他手滑了！对你miss！")
@@ -314,12 +310,6 @@ def floors():
                     else:
                         print("这你都打不中？")
                     if judge():
-                        # if judge_crit():
-                        #     hp = hp - 2 * mobs_att
-                        #     print("怪物对你造成了%d点暴击伤害(你还有%d血)" % (2 * mobs_att, hp))
-                        # else:
-                        #     hp = hp - mobs_att
-                        #     print("怪物对你造成了%d点伤害(你还有%d血)" % (mobs_att, hp))
                         mobs_combat(mobs_att)
                     else:
                         print("他手滑了！对你miss！")
@@ -333,10 +323,15 @@ def floors():
             elif mobs_hp <= 0:
                 back_heal = random.randint(1, 10)
                 back_mp = random.randint(1, 20)
+                if i == boss_cut:
+                    get_exp = random.randint(5, 8)
+                else:
+                    get_exp = random.randint(1,3)
                 if job == '2':
                     back_heal = random.randint(1, 30)
                     back_mp = random.randint(1, 30)
-                print("算你好运，通过一个，神秘力量为您回复%d点血量和%d点魔力" % (back_heal, back_mp))
+                print("算你好运，通过一个，神秘力量为您回复%d点血量和%d点魔力，%d点经验已到账" %
+                      (back_heal, back_mp, get_exp))
                 if hp + back_heal > hp_limit:
                     hp = hp_limit
                 else:
@@ -345,9 +340,22 @@ def floors():
                     mp = mp_limit
                 else:
                     mp += back_mp
+                if exp + get_exp >= need_exp:
+                    exp = (exp + get_exp) - need_exp
+                    level += 1
+                    up_hp = random.randint(30, 50)
+                    up_mp = random.randint(20, 40)
+                    hp_limit += up_hp
+                    hp += up_hp
+                    mp_limit += up_mp
+                    mp += up_mp
+                    need_exp = level * 10
+                    print("等级提升，血量上升%d，魔力上升%d" % (up_hp, up_mp))
+                else:
+                    exp += get_exp
                 kill += 1
-                print("------------\n职业：%s\n生命值：%d/%d\n魔力值：%d/%d\n攻击力：%d\n------------" %
-                      (job_list[job], hp, hp_limit, mp, mp_limit, att))
+                print("------------\n职业：%s\n等级：%d\n经验值：%d/%d\n生命值：%d/%d\n魔力值：%d/%d\n攻击力：%d\n------------" %
+                      (job_list[job], level, exp, need_exp, hp, hp_limit, mp, mp_limit, att))
                 # time.sleep(3)
         now += 1
 
@@ -358,7 +366,8 @@ def debug():
 
 
 def start():
-    global hp, hp_limit, mp, mp_limit, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
+    global hp, hp_limit, mp, mp_limit, att, job, exp, level, need_exp, percent, job_list, warrior_skill, mage_skill, \
+        floor, att_flag, mage_5_count
     mage_5_count = 0
     hp_limit = 100
     mp_limit = 100
@@ -366,6 +375,7 @@ def start():
     job = ''
     exp = 0
     level = 1
+    need_exp = level * 10
     percent = 0
     att_flag = True
     floor = random.randint(1, 100)
@@ -381,5 +391,6 @@ def start():
 
 
 if __name__ == "__main__":
-    global hp, hp_limit, mp, mp_limit, att, job, exp, level, percent, job_list, warrior_skill, mage_skill, floor, att_flag, mage_5_count
+    global hp, hp_limit, mp, mp_limit, att, job, exp, level, need_exp, percent, job_list, warrior_skill, mage_skill, \
+        floor, att_flag, mage_5_count
     start()

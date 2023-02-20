@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+
+<html>
+
+<title>微信公众号：文刀山宗</title>
+
+<meta charset="utf-8" />
+
+<body bgcolor="white">
+
+	<p>游戏说明：这是一个非常easy的文字放置小游戏雏形。每2秒高几率获得1枚灵石，手动挖灵石小几率立即获得1枚灵石！还可以用灵石升级，你可以随意删改所有数值或逻辑，体会身为挂逼的快感。如果大家对山宗的支持足够给力的话，后续版本更新还会有打怪,建设凡人城镇,圈养矿奴,调教仙宠,以及群友强烈建议的勾搭美艳女修双修三修等离奇内容(虽然不是很懂,不过听起来就很厉害啊)！咳！然后呢，如果本教程对你有帮助！还请多多分享出去哟！转载请保留出处以及说明文字。</br>
+
+	༻༻༻༻༻༻༻༻༻༻༻
+
+	<script type="text/javascript"> //标记以下代码为javascript
+
+	// alert("在修仙之前...\n先让我们换一个更舒服的颜色吧!\n比如...象牙色?");
+
+	document.bgColor="#FFFFF0";//很清新很温暖的象牙色哟~
+
+	//-----------下面是游戏逻辑的完整代码,附有详细注释!极其简单易学!一看就会系列！-------------//
+	var mage_5_count = 0
+    var hp_limit = 100
+    var mp_limit = 100
+    var att = 10
+    var job = ''
+    var exp = 0
+    var level = 1
+    var percent = 0
+    // var att_flag = True
+    var floor = Math.ceil(Math.random()*100)
+	var lingshi = 0;	//灵石数量
+
+	var Lv = 0;	//修士等级
+
+	//点挖挖灵石的按钮逻辑
+
+	function Wa_LingShi(){
+
+		gain_(8);	//较低几率参数
+
+	}
+
+	//每2秒执行的放置逻辑
+
+	setInterval(	function(){ gain_(4); },2000);	//每2秒执行一次 gain_函数,较高几率参数
+
+	//点升级的按钮逻辑
+
+	function Up_lv(){
+
+		if (lingshi>=Lv*Lv+5) {	//升级所需灵石的公式为 等级*等级+5
+
+			lingshi-=Lv*Lv+5;	Lv++;	//扣除灵石,提升等级
+
+			document.form3.label2.value = "当前修士等级 "+Lv;	//更新文本框中的修士等级显示
+
+			document.form1.label.value = "当前拥有灵石 "+lingshi;	//更新文本框中的灵石数量显示
+
+		}else{ 
+
+			alert("升级失败!\n升级需要灵石 "+(Lv*Lv+5)); //报错弹窗
+
+		};
+
+	}
+
+	//根据传递的灵石几率参数决定收益并显示
+
+	function gain_(num){	
+
+		if (Math.floor(Math.random()*10+1)>num){	//根据参数决定获取几率
+
+			lingshi++;	//灵石+1
+
+			document.form1.label.value = "当前拥有灵石 "+lingshi;	//更新文本框中的灵石数量
+			document.form0.label.value = "本次地牢共有"+floor+"层，祝你好运";
+
+		}
+
+	}
+
+	</script>
+
+</body>
+
+<form action=" " name="form0">
+
+	<input type='text' readonly='readonly' name="label" value="正在收拾装备" />
+
+</form>
+
+<form action=" " name="form1">
+
+	<input type='text' readonly='readonly' name="label" value="当前拥有灵石 0" />
+
+</form>
+
+<form action=" " name="form2">
+
+	<input type="button" name="wajue" value="我挖挖挖灵石!" onclick="Wa_LingShi()" />
+
+</form>
+
+<form action=" " name="form3">
+
+	<input type='text' readonly='readonly' name="label2" value="当前修士等级 0" />
+
+</form>
+
+<form action=" " name="form4">
+
+	<input type="button" name="shengji" value="修士升级!" onclick="Up_lv()" />
+
+</form>
+
+</html>
+
+༻༻༻༻༻༻༻༻༻༻༻</br>
