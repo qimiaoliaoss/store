@@ -8,8 +8,9 @@ import requests
 import json
 from lxml import etree
 import platform
-import time
+import time, os
 import configparser
+
 requests.packages.urllib3.disable_warnings()
 
 
@@ -26,7 +27,8 @@ def get_HTML(url1):
     proxy = get_proxy().get("proxy")
     while retry_count > 0:
         try:
-            html = requests.get(url1, headers=header, cookies=cookie, proxies={"http": "http://{}".format(proxy)}, verify=False,
+            html = requests.get(url1, headers=header, cookies=cookie, proxies={"http": "http://{}".format(proxy)},
+                                verify=False,
                                 timeout=3)
             # 使用代理访问
             print("查询成功")
@@ -47,7 +49,7 @@ def get_target(url1):
             old = f.readlines()
             for i in range(len(old)):
                 old[i] = old[i].replace('\n', '')
-            print(old)
+            print("有%d条旧记录" % len(old))
             res = get_HTML(url1)
             # print(res.content.decode('GBK'))
             if res != 'error' and res.status_code == 200:
@@ -120,7 +122,11 @@ if __name__ == '__main__':
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     print('-------运行时间：{}'.format(now) + '-------')
     config = configparser.ConfigParser()
-    config.read("./config.ini", encoding="utf-8")
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    father_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    config_path = basedir + r'\config.ini'
+    print('config_path：' + config_path)
+    config.read(config_path, encoding="utf-8")
     header = json.loads(config['account']['header'])
     cookie = json.loads(config['account']['ck'])
     proxy = json.loads(config['DEFAULT']['proxy'])
