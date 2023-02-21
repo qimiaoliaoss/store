@@ -9,15 +9,16 @@ import json
 from lxml import etree
 import platform
 import time
-
+import configparser
 requests.packages.urllib3.disable_warnings()
 
+
 def get_proxy():
-    return requests.get("https://proxy.ionssource.cn/get/").json()
+    return requests.get("https://" + proxy + "/get/").json()
 
 
 def delete_proxy(proxy):
-    requests.get("https://proxy.ionssource.cn/delete/?proxy={}".format(proxy))
+    requests.get("https://" + proxy + "/delete/?proxy={}".format(proxy))
 
 
 def get_HTML(url1):
@@ -25,7 +26,7 @@ def get_HTML(url1):
     proxy = get_proxy().get("proxy")
     while retry_count > 0:
         try:
-            html = requests.get(url1, proxies={"http": "http://{}".format(proxy)}, verify=False,
+            html = requests.get(url1, headers=header, cookies=cookie, proxies={"http": "http://{}".format(proxy)}, verify=False,
                                 timeout=3)
             # 使用代理访问
             print("查询成功")
@@ -50,10 +51,11 @@ def get_target(url1):
             res = get_HTML(url1)
             # print(res.content.decode('GBK'))
             if res != 'error' and res.status_code == 200:
-                html = res.content.decode('GBK')
+                print("读取页面内容")
+                html = res.content.decode('utf-8')
                 et_html = etree.HTML(html)
                 title = et_html.xpath('//*[@id="redtag"]/a')
-                print(title)
+                # print(title)
                 for i in range(len(title)):
                     tl = title[i].attrib.get('title')
                     dz = 'http://www.0818tuan.com' + title[i].attrib.get('href')
@@ -63,9 +65,6 @@ def get_target(url1):
                         f.write(tl + '\n')
                         # notify(tl, dz)
                         new = tl + '\n' + dz
-                        corp_id = 'wwf04f95d8867721ad'
-                        corp_secret = 'bFxgjAOTrTokZke7FYATo7kiKVtcwZb_tU6bI6epLxM'
-                        agent_id = '1000003'
                         access_token, expires_in = get_access_token(corp_id, corp_secret)
                         wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
             else:
@@ -76,7 +75,7 @@ def get_target(url1):
 
 
 def notify(tl, new):
-    api = "https://sctapi.ftqq.com/SCT14710Tb1DiNZ09b0Wdg9wSh9DD6E2H.send"
+    api = "https://sctapi.ftqq.com/" + serverchen_key + ".send"
     title = '有线报'
     content = '%s 地址：%s' % (tl, new)
     data = {
@@ -120,7 +119,17 @@ def wechat_push_text(agent_id, access_token, message):
 if __name__ == '__main__':
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     print('-------运行时间：{}'.format(now) + '-------')
-    list = ['大水', '建行', '建设银行',]
+    config = configparser.ConfigParser()
+    config.read("./config.ini", encoding="utf-8")
+    header = json.loads(config['account']['header'])
+    cookie = json.loads(config['account']['ck'])
+    proxy = json.loads(config['DEFAULT']['proxy'])
+    serverchen_key = json.loads(config['serverchen']['key'])
+    corp_id = json.loads(config['wechat']['corp_id'])
+    corp_secret = json.loads(config['wechat']['corp_secret'])
+    agent_id = json.loads(config['wechat']['agent_id'])
+    # print(cookie)
+    list = ['大水', '建行', '建设银行']
     platform_sys = platform.system()
     if platform_sys == 'Windows':
         path = "xb.txt"
