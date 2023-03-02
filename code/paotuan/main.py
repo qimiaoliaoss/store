@@ -7,6 +7,8 @@ import random
 import time
 import sys
 from flask import Flask
+
+
 # app = Flask(__name__)
 
 
@@ -33,37 +35,12 @@ def judge_crit():
 def judge_skill():
     cast = random.randint(1, 6)
     if job == '1':
-        if cast == 1 and roll() == 1:
+        if cast == 1 and roll() == 1 or cast == 2 and roll() <= 20 or cast == 3 and roll() <= 5 or cast == 4 and roll() <= 80 or cast == 5 and roll() <= 15 or cast == 6 and roll() <= 80:
             return cast
-        elif cast == 2 and roll() <= 20:
-            return cast
-        elif cast == 3 and roll() <= 5:
-            return cast
-        elif cast == 4 and roll() <= 80:
-            return cast
-        elif cast == 5 and roll() <= 15:
-            return cast
-        elif cast == 6 and roll() <= 80:
-            return cast
-        else:
-            return False
     elif job == '2':
-        if cast == 1 and roll() <= 90:
+        if cast == 1 and roll() <= 90 or cast == 2 and roll() <= 60 or cast == 3 and roll() <= 50 or cast == 4 and roll() <= 30 or cast == 5 and roll() <= 10 or cast == 6 and roll() <= 70:
             return cast
-        elif cast == 2 and roll() <= 60:
-            return cast
-        elif cast == 3 and roll() <= 50:
-            return cast
-        elif cast == 4 and roll() <= 30:
-            return cast
-        elif cast == 5 and roll() <= 10:
-            return cast
-        elif cast == 6 and roll() <= 70:
-            return cast
-        else:
-            return False
-    else:
-        return False
+    return False
 
 
 def judge_use_skill():
@@ -326,7 +303,7 @@ def floors():
                 if i == boss_cut:
                     get_exp = random.randint(5, 8)
                 else:
-                    get_exp = random.randint(1,3)
+                    get_exp = random.randint(1, 3)
                 if job == '2':
                     back_heal = random.randint(1, 30)
                     back_mp = random.randint(1, 30)
@@ -361,7 +338,7 @@ def floors():
 
 
 def debug():
-    print(100//10)
+    print(100 // 10)
     exit()
 
 
