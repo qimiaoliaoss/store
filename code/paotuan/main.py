@@ -6,10 +6,6 @@
 import random
 import time
 import sys
-from flask import Flask
-
-
-# app = Flask(__name__)
 
 
 def roll():
@@ -235,6 +231,10 @@ def floors():
     while now <= floor:
         mobs_num = random.randint(1, 10)
         boss_cut = random.randint(1, mobs_num)
+        shop_room = None
+        if mobs_num > 3:
+            while shop_room is None or shop_room == boss_cut:
+                shop_room = random.randint(1, mobs_num)
         print("开始闯关第%d层，本层共有%d只怪，第%d个为Boss房，愿风指引你" % (now, mobs_num, boss_cut))
         for i in range(1, mobs_num + 1):
             if mage_5_count > 0:
@@ -254,61 +254,14 @@ def floors():
                 span_level = 1
             else:
                 span_level = now / 10
-            if i != boss_cut:
-                # mobs_level = random.randint(now // 10)
-                mobs_hp = int(random.randint(20, 50) * span_level)
-                mobs_mp = int(random.randint(20, 50) * span_level)
-                mobs_att = int(random.randint(2, 6) * span_level)
-                print("------------\n当前：小怪\n生命值：%d\n魔力值：%d\n攻击力：%d\n------------" %
-                      (mobs_hp, mobs_mp, mobs_att))
-            else:
-                mobs_hp = int(random.randint(40, 60) * span_level)
-                mobs_mp = int(random.randint(30, 60) * span_level)
-                mobs_att = int(random.randint(6, 10) * span_level)
-                print("------------\n当前：BOSS房\n生命值：%d\n魔力值：%d\n攻击力：%d\n------------" %
-                      (mobs_hp, mobs_mp, mobs_att))
-            print("开始战斗")
-            roll_tmp = fight()
-            while hp > 0 and mobs_hp > 0:
-                # 怪物先攻
-                if roll_tmp <= 50:
-                    if judge():
-                        mobs_combat(mobs_att)
-                    else:
-                        print("他手滑了！对你miss！")
-                    if judge():
-                        mobs_hp = combat(mobs_hp)
-                    else:
-                        print("这你都打不中？")
-                # 玩家先攻
-                else:
-                    if judge():
-                        mobs_hp = combat(mobs_hp)
-                    else:
-                        print("这你都打不中？")
-                    if judge():
-                        mobs_combat(mobs_att)
-                    else:
-                        print("他手滑了！对你miss！")
-                time.sleep(1)
-            if hp <= 0 and mobs_hp <= 0:
-                print("------------\n惨烈，你在%d层这里就同归于尽了" % now)
-                return now, kill
-            elif hp <= 0:
-                print("------------\n胜败乃是兵家常事，少侠下次再来")
-                return now, kill
-            elif mobs_hp <= 0:
+            if i == shop_room:
+                print("旅行商人欢迎你,现在商店还没装修好，给你回点状态好了")
                 back_heal = random.randint(1, 10)
                 back_mp = random.randint(1, 20)
-                if i == boss_cut:
-                    get_exp = random.randint(5, 8)
-                else:
-                    get_exp = random.randint(1, 3)
+                print("神秘力量为您回复%d点血量和%d点魔力" % (back_heal, back_mp))
                 if job == '2':
                     back_heal = random.randint(1, 30)
                     back_mp = random.randint(1, 30)
-                print("算你好运，通过一个，神秘力量为您回复%d点血量和%d点魔力，%d点经验已到账" %
-                      (back_heal, back_mp, get_exp))
                 if hp + back_heal > hp_limit:
                     hp = hp_limit
                 else:
@@ -317,23 +270,87 @@ def floors():
                     mp = mp_limit
                 else:
                     mp += back_mp
-                if exp + get_exp >= need_exp:
-                    exp = (exp + get_exp) - need_exp
-                    level += 1
-                    up_hp = random.randint(30, 50)
-                    up_mp = random.randint(20, 40)
-                    hp_limit += up_hp
-                    hp += up_hp
-                    mp_limit += up_mp
-                    mp += up_mp
-                    need_exp = level * 10
-                    print("等级提升，血量上升%d，魔力上升%d" % (up_hp, up_mp))
+            else:
+                if i != boss_cut:
+                    # mobs_level = random.randint(now // 10)
+                    mobs_hp = int(random.randint(20, 50) * span_level)
+                    mobs_mp = int(random.randint(20, 50) * span_level)
+                    mobs_att = int(random.randint(2, 6) * span_level)
+                    print("------------\n当前：小怪\n生命值：%d\n魔力值：%d\n攻击力：%d\n------------" %
+                          (mobs_hp, mobs_mp, mobs_att))
                 else:
-                    exp += get_exp
-                kill += 1
-                print("------------\n职业：%s\n等级：%d\n经验值：%d/%d\n生命值：%d/%d\n魔力值：%d/%d\n攻击力：%d\n------------" %
-                      (job_list[job], level, exp, need_exp, hp, hp_limit, mp, mp_limit, att))
-                # time.sleep(3)
+                    mobs_hp = int(random.randint(40, 60) * span_level)
+                    mobs_mp = int(random.randint(30, 60) * span_level)
+                    mobs_att = int(random.randint(6, 10) * span_level)
+                    print("------------\n当前：BOSS房\n生命值：%d\n魔力值：%d\n攻击力：%d\n------------" %
+                          (mobs_hp, mobs_mp, mobs_att))
+                print("开始战斗")
+                roll_tmp = fight()
+                while hp > 0 and mobs_hp > 0:
+                    # 怪物先攻
+                    if roll_tmp <= 50:
+                        if judge():
+                            mobs_combat(mobs_att)
+                        else:
+                            print("他手滑了！对你miss！")
+                        if judge():
+                            mobs_hp = combat(mobs_hp)
+                        else:
+                            print("这你都打不中？")
+                    # 玩家先攻
+                    else:
+                        if judge():
+                            mobs_hp = combat(mobs_hp)
+                        else:
+                            print("这你都打不中？")
+                        if judge():
+                            mobs_combat(mobs_att)
+                        else:
+                            print("他手滑了！对你miss！")
+                    time.sleep(0.5)
+                if hp <= 0 and mobs_hp <= 0:
+                    print("------------\n惨烈，你在%d层这里就同归于尽了" % now)
+                    return now, kill
+                elif hp <= 0:
+                    print("------------\n胜败乃是兵家常事，少侠下次再来")
+                    return now, kill
+                elif mobs_hp <= 0:
+                    back_heal = random.randint(1, 10)
+                    back_mp = random.randint(1, 20)
+                    if i == boss_cut:
+                        get_exp = random.randint(5, 8)
+                    else:
+                        get_exp = random.randint(1, 3)
+                    if job == '2':
+                        back_heal = random.randint(1, 30)
+                        back_mp = random.randint(1, 30)
+                    print("算你好运，通过一个，神秘力量为您回复%d点血量和%d点魔力，%d点经验已到账" %
+                          (back_heal, back_mp, get_exp))
+                    if hp + back_heal > hp_limit:
+                        hp = hp_limit
+                    else:
+                        hp += back_heal
+                    if mp + back_mp > mp_limit:
+                        mp = mp_limit
+                    else:
+                        mp += back_mp
+                    if exp + get_exp >= need_exp:
+                        exp = (exp + get_exp) - need_exp
+                        level += 1
+                        up_hp = random.randint(30, 50)
+                        up_mp = random.randint(20, 40)
+                        hp_limit += up_hp
+                        hp += up_hp
+                        mp_limit += up_mp
+                        mp += up_mp
+                        need_exp = level * 10
+                        print("等级提升，血量上升%d，魔力上升%d" % (up_hp, up_mp))
+                    else:
+                        exp += get_exp
+                    kill += 1
+                    print("------------\n职业：%s\n等级：%d\n经验值：%d/%d\n生命值：%d/%d\n魔力值：%d/%d\n攻击力：%d\n------------" %
+                          (job_list[job], level, exp, need_exp, hp, hp_limit, mp, mp_limit, att))
+                    # time.sleep(3)
         now += 1
 
 
