@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>文字地牢闯关游戏</title>
+    <meta charset="utf-8"/>
+</head>
+<style>
+    #output {
+        height: 350px; /* 修改为适当的高度 */
+        overflow-y: scroll;
+        scroll-behavior: smooth;
+    }
+</style>
+<body>
+<h1>文字地牢闯关游戏</h1>
+<button id="startButton">开始游戏</button>
+<p>总层数：<span id="totalLevels">0</span></p>
+<p>当前层数：<span id="currentLevel">0</span></p>
+<div id="player-info">
+    <h2>人物信息</h2>
+    <p>剩余生命：<span id="health">0</span></p>
+    <p>攻击力：<span id="attack">0</span></p>
+    <p>经验值：<span id="exp">0</span></p>
+    <p>击败怪物数：<span id="defeatedMonsters">0</span></p>
+</div>
+<p>当前层剩余怪物数：<span id="remainingMonsters">0</span></p>
+<p>状态：<span id="status">未开始</span></p>
+<h2>战斗过程</h2>
+<p id="output"></p>
+<script>
+    // 获取HTML元素
+    const startButton = document.getElementById("startButton");
+    const totalLevels = document.getElementById("totalLevels");
+    const currentLevel = document.getElementById("currentLevel");
+    const health = document.getElementById("health");
+    const attack = document.getElementById("attack");
+    const exp = document.getElementById("exp");
+    const defeatedMonsters = document.getElementById("defeatedMonsters");
+    const remainingMonsters = document.getElementById("remainingMonsters");
+    const status = document.getElementById("status");
+    const output = document.getElementById("output");
+
+    // 定义游戏状态
+    let levels = 0;
+    let current = 0;
+    let hp = 0;
+    let atk = 0;
+    let experience = 0;
+    let defeated = 0;
+    let remaining = 0;
+    let tmp_remaining = 0;
+    let level_exp = 10; // 升一级需要的经验值
+
+    //定义输出函数
+    function printOutput(str) {
+        output.innerHTML += "<p>" + str + "</p>";
+        output.scrollTop = output.scrollHeight;
+    }
+
+    // 定义怪物数据
+    const monsters = [
+        {name: "史莱姆", hp: 10, atk: 2, exp: 1},
+        {name: "骷髅", hp: 15, atk: 3, exp: 2},
+        {name: "食人魔", hp: 20, atk: 4, exp: 3},
+        {name: "恶魔", hp: 25, atk: 5, exp: 4},
+        {name: "巨龙", hp: 30, atk: 6, exp: 5}
+    ];
+
+    // 定义游戏开始函数
+    function startGame() {
+        // 重置游戏状态
+        levels = Math.floor(Math.random() * 5) + 1; // 随机生成总层数
+        current = 1;
+        hp = 50;
+        atk = 5;
+        experience = 0;
+        atk = 5 + Math.floor(experience / level_exp);
+        defeated = 0;
+        updateStatus();
+        // 开始第一层
+        startLevel();
+    }
+
+    // 定义开始新层函数
+    function startLevel() {
+        remaining = Math.floor(Math.random() * 5) + 1; // 随机生成剩余怪物数
+        tmp_remaining = remaining;
+        updateStatus();
+        printOutput("你进入了第 " + current + " 层地牢！");
+        generateMonsters();
+
+        // 修改怪物属性
+        const levelModifier = (current - 1) * 2;
+        monsters.forEach(monster => {
+            monster.hp += levelModifier;
+            monster.atk += levelModifier;
+            monster.exp += levelModifier;
+        });
+    }
+
+    function randomInRange(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    // 定义生成怪物函数
+    async function generateMonsters() {
+        printOutput("你遇到了 " + remaining + " 个怪物：");
+        await fightAllMonsters();
+    }
+
+    // 定义战斗函数
+    async function fightMonster(monster) {
+        // 初始化战斗状态
+        // let player_hp = hp;
+        let monster_hp = monster.hp;
+
+        // 输出战斗开始信息
+        printOutput("你开始与 " + monster.name + " 战斗！");
+
+        // 开始战斗，直到一方血量归零
+        // while (player_hp > 0 && monster_hp > 0) {
+        while (hp > 0 && monster_hp > 0) {
+            // 模拟玩家攻击
+            printOutput("你对 " + monster.name + " 造成了 " + atk + " 点伤害！");
+            monster_hp -= atk;
+            updateStatus()
+
+            // 等待1秒钟
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // 检查怪物是否被击败
+            if (monster_hp <= 0) {
+                // 怪物被击败，获得经验和战利品
+                // tmp_atk = randomInRange(1, monster.atk)
+                printOutput("你战胜了 " + monster.name + "，获得了 " + monster.exp + " 点经验");
+                experience += monster.exp;
+                defeated++;
+                experience += monster.exp;
+                if (experience >= level_exp) {
+                    // 升级
+                    experience -= level_exp;
+                    level_exp *= 2;
+                    hp += 10;
+                    atk++;
+                    printOutput("你升到了 " + (Math.floor(experience / level_exp) + 2) + " 级！");
+                }
+                return true;
+            }
+
+            // 模拟怪物攻击
+            printOutput(monster.name + " 对你造成了 " + monster.atk + " 点伤害！");
+            // player_hp -= monster.atk;
+            hp -= monster.atk;
+            updateStatus()
+
+            // 等待1秒钟
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // 检查玩家是否被击败
+            // if (player_hp <= 0) {
+            if (hp <= 0) {
+                // 玩家被击败，游戏结束
+                printOutput("你被 " + monster.name + " 打败了！");
+                status.innerHTML = "游戏结束";
+                startButton.disabled = false;
+                return false;
+            }
+        }
+    }
+
+    // 定义逐一战斗函数
+    async function fightAllMonsters() {
+        for (let i = 0; i < monsters.length && remaining > 0; i++) {
+            if (await fightMonster(monsters[i])) {
+                // 玩家获胜，剩余怪物数减一
+                remaining--;
+                tmp_remaining--;
+                updateStatus();
+            } else {
+                // 玩家失败，退出函数
+                return;
+            }
+        }
+
+        // 所有怪物被击败，进入下一层
+        current++;
+        tmp_remaining = 0;
+        updateStatus();
+        if (current <= levels) {
+            printOutput("你成功通过了第 " + (current - 1) + " 层！");
+            printOutput("准备进入第 " + current + " 层...");
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            startLevel();
+        } else {
+            printOutput("你已经通关了所有层数，游戏结束！");
+            status.innerHTML = "游戏结束";
+            startButton.disabled = false;
+        }
+    }
+
+
+    // 定义更新状态函数
+    function updateStatus() {
+        totalLevels.textContent = levels;
+        currentLevel.textContent = current;
+        health.textContent = hp;
+        attack.textContent = atk + Math.floor(experience / level_exp);
+        exp.textContent = experience + "/" + level_exp;
+        defeatedMonsters.textContent = defeated;
+        remainingMonsters.textContent = tmp_remaining;
+        status.textContent = (remaining > 0) ? "战斗中" : "等待下一层";
+    }
+
+    // 添加按钮点击事件
+    startButton.addEventListener("click", function () {
+        startButton.disabled = true;
+        output.innerHTML = "";
+        status.innerHTML = "游戏进行中";
+        startGame();
+    });
+</script>
+</body>
+</html>
