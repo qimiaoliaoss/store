@@ -69,7 +69,7 @@
     // 定义游戏开始函数
     function startGame() {
         // 重置游戏状态
-        levels = Math.floor(Math.random() * 5) + 1; // 随机生成总层数
+        levels = Math.floor(Math.random() * 20) + 1; // 随机生成总层数
         current = 1;
         hp = 50;
         atk = 5;
@@ -111,7 +111,6 @@
     // 定义战斗函数
     async function fightMonster(monster) {
         // 初始化战斗状态
-        // let player_hp = hp;
         let monster_hp = monster.hp;
 
         // 输出战斗开始信息
@@ -121,8 +120,8 @@
         // while (player_hp > 0 && monster_hp > 0) {
         while (hp > 0 && monster_hp > 0) {
             // 模拟玩家攻击
-            printOutput("你对 " + monster.name + " 造成了 " + atk + " 点伤害！");
             monster_hp -= atk;
+            printOutput("你对 " + monster.name + " 造成了 " + atk + " 点伤害！( " + monster_hp + " / " + monster.hp + " )");
             updateStatus()
 
             // 等待1秒钟
@@ -131,9 +130,7 @@
             // 检查怪物是否被击败
             if (monster_hp <= 0) {
                 // 怪物被击败，获得经验和战利品
-                // tmp_atk = randomInRange(1, monster.atk)
                 printOutput("你战胜了 " + monster.name + "，获得了 " + monster.exp + " 点经验");
-                experience += monster.exp;
                 defeated++;
                 experience += monster.exp;
                 if (experience >= level_exp) {
@@ -149,7 +146,6 @@
 
             // 模拟怪物攻击
             printOutput(monster.name + " 对你造成了 " + monster.atk + " 点伤害！");
-            // player_hp -= monster.atk;
             hp -= monster.atk;
             updateStatus()
 
@@ -157,7 +153,6 @@
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // 检查玩家是否被击败
-            // if (player_hp <= 0) {
             if (hp <= 0) {
                 // 玩家被击败，游戏结束
                 printOutput("你被 " + monster.name + " 打败了！");
