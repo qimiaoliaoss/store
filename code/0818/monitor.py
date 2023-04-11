@@ -43,6 +43,42 @@ def get_HTML(url1):
     return err
 
 
+def Shorter(url):
+    work_net = "https://d.naccl.top/generate"
+    payload = {
+        "longURL": url
+    }
+
+    headers = {
+        # "Content-Type": "application/json",
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Host': 'd.naccl.top',
+        'Origin': 'https://d.naccl.top',
+        'Referer': 'https://d.naccl.top/',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest',
+        'sec-ch-ua': '"Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9'
+    }
+
+    response = requests.post(work_net, data=payload, headers=headers)
+    response_json = json.loads(response.content)
+    # print(response_json)
+    if response_json['code'] == 200:
+        tmp = response_json['data']
+        # print(tmp)
+        return tmp
+    else:
+        return False
+
+
 def get_target(url1):
     try:
         with open(path, 'r+', encoding='utf-8') as f:
@@ -63,12 +99,21 @@ def get_target(url1):
                     dz = 'http://www.0818tuan.com' + title[i].attrib.get('href')
                     # if ('京东' in tl or '京东' in tl or '建行' in tl) and tl not in old:
                     if (any(list_ele in tl for list_ele in list)) and tl not in old:
-                        print('%s 地址：%s' % (tl, dz))
-                        f.write(tl + '\n')
-                        # notify(tl, dz)
-                        new = tl + '\n' + dz
-                        access_token, expires_in = get_access_token(corp_id, corp_secret)
-                        wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
+                        shdz = Shorter(dz)
+                        if shdz:
+                            print('%s 地址：%s' % (tl, shdz))
+                            f.write(tl + '\n')
+                            # notify(tl, shdz)
+                            new = tl + '\n' + shdz
+                            access_token, expires_in = get_access_token(corp_id, corp_secret)
+                            wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
+                        else:
+                            print('短链服务异常\n%s 地址：%s' % (tl, dz))
+                            f.write(tl + '\n')
+                            # notify(tl, shdz)
+                            new = tl + '\n' + dz
+                            access_token, expires_in = get_access_token(corp_id, corp_secret)
+                            wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
             else:
                 print('路上过于拥堵')
     except Exception as e:
@@ -134,8 +179,9 @@ if __name__ == '__main__':
     corp_id = json.loads(config['wechat']['corp_id'])
     corp_secret = json.loads(config['wechat']['corp_secret'])
     agent_id = json.loads(config['wechat']['agent_id'])
+    password = json.loads(config['DEFAULT']['password'])
     # print(cookie)
-    list = ['大水', '建行', '建设银行']
+    list = ['大水', '建行', '建设银行', '电信']
     platform_sys = platform.system()
     if platform_sys == 'Windows':
         path = "xb.txt"
