@@ -50,7 +50,6 @@ def Shorter(url):
     }
 
     headers = {
-        # "Content-Type": "application/json",
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'Host': 'd.naccl.top',
         'Origin': 'https://d.naccl.top',
@@ -111,9 +110,10 @@ def get_target(url1):
                             print('短链服务异常\n%s 地址：%s' % (tl, dz))
                             f.write(tl + '\n')
                             # notify(tl, shdz)
-                            new = tl + '\n' + dz
+                            new = '短链服务异常\n' + tl + '\n' + dz
                             access_token, expires_in = get_access_token(corp_id, corp_secret)
                             wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
+                        time.sleep(5)
             else:
                 print('路上过于拥堵')
     except Exception as e:
@@ -179,9 +179,8 @@ if __name__ == '__main__':
     corp_id = json.loads(config['wechat']['corp_id'])
     corp_secret = json.loads(config['wechat']['corp_secret'])
     agent_id = json.loads(config['wechat']['agent_id'])
-    password = json.loads(config['DEFAULT']['password'])
     # print(cookie)
-    list = ['大水', '建行', '建设银行', '电信']
+    list = ['大水', '建行', '建设银行', '电信', '移动']
     platform_sys = platform.system()
     if platform_sys == 'Windows':
         path = "xb.txt"
