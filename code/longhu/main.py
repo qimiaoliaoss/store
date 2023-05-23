@@ -14,6 +14,7 @@ import json
 urllib3.disable_warnings()
 r = redis.Redis(host='localhost', port=6379, db=0)
 
+
 def youzi():
     try:
         youzi_dict = {}
@@ -67,11 +68,28 @@ def main():
         html = etree.HTML(response)
         code = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[1]/div/div/table/tbody/tr/td[2]/text()')
         name = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[1]/div/div/table/tbody/tr/td[3]/a/text()')
+        price = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[1]/div/div/table/tbody/tr/td[7]/text()')
+        # three = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[1]/div/div/table/tbody/tr/td[1]/label/text()')
         if len(code) == len(name):
             for i in range(len(code)):
-                print('{}：{}'.format(code[i], name[i]))
-                buy = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[2]/div[' + str(i + 1) + ']/div[2]/table[1]/tbody/tr/td[1]/a/@title')
-                sell = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[2]/div[' + str(i + 1) + ']/div[2]/table[2]/tbody/tr/td[1]/a/@title')
+                print("------------------------")
+                try:
+                    three = html.xpath(
+                        '//*[@id="ggmx"]/div[2]/div[3]/div[1]/div/div/table/tbody/tr[' + str(i+1) + ']/td['
+                                                                                                    '1]/label/text('
+                                                                                                    ')')[0]
+                except Exception as e:
+                    # print(e)
+                    three = ''
+                # print(three)
+                if three == '3日':
+                    print('|{}|{}：{}，净买入额：{}'.format(three, code[i], name[i], price[i]))
+                elif three == '':
+                    print('{}：{}，净买入额：{}'.format(code[i], name[i], price[i]))
+                buy = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[2]/div[' + str(
+                    i + 1) + ']/div[2]/table[1]/tbody/tr/td[1]/a/@title')
+                sell = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[2]/div[' + str(
+                    i + 1) + ']/div[2]/table[2]/tbody/tr/td[1]/a/@title')
                 print('买入席位：')
                 for k in range(len(buy)):
                     for key, value in youzi_list.items():
@@ -82,6 +100,7 @@ def main():
                     for key, value in youzi_list.items():
                         if sell[k] in value and key != 'T王':
                             print('  {}：{}'.format(key, sell[k]))
+                print("------------------------")
     except Exception as e:
         print('Except：' + str(e) + "，Line：" + str(e.__traceback__.tb_lineno))
 
