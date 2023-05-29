@@ -5,55 +5,108 @@
 # @Software: PyCharm
 import requests
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
+import configparser
+import os
+import time
 
 
-def main():
-    timezone_1 = timezone(timedelta(hours=8))
-    url = "https://weibo.com/ajax/statuses/mymblog?uid=7769778635&page=1&feature=0"
+def get_access_token(corp_id, corp_secret):
+    resp = requests.get(f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corp_id}&corpsecret={corp_secret}')
+    js = json.loads(resp.text)
+    # print(js)
+    if js["errcode"] == 0:
+        access_token = js["access_token"]
+        expires_in = js["expires_in"]
+        return access_token, expires_in
 
-    header = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'zh-CN,zh;q=0.9',
-        'Cache-Control': 'max-age=0',
-        'Cookie': 'XSRF-TOKEN=iviBIqPXJuuK_iOdqT8R2vnw; SUB=_2AkMTLNUnf8NxqwFRmfkXzW3kaYxzww7EieKlcCT8JRMxHRl-yT9vqnZStRB6OKz7yCac7cbolPuQCcRCOzonkD4TnqAF; SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9W5EXnGCOUZiBSbrCw8ZUYX3; WBPSESS=HOKMwFaOhMG7Cl30d6Y-8XIBLMI452kWIDg2ckiQniXNxwCnVZF61EfEdhSiWWjQoKl4he5G0MuW0aEV-D05O52gLQTbZCEyX1X92EVhQU-rpvz7uy18TnJLdj7behY7',
-        'Sec-Ch-Ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
+
+def wechat_push_text(agent_id, access_token, message):
+    data = {
+        "touser": "@all",
+        "msgtype": 'text',
+        "agentid": agent_id,
+        "text": {
+            "content": message
+        },
+        "safe": 0,
+        "enable_id_trans": 0,
+        "enable_duplicate_check": 0,
+        "duplicate_check_interval": 1800
     }
+    resp = requests.post(f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}', json=data)
+    js = json.loads(resp.text)
+    # print(js)
+    if js["errcode"] == 0:
+        return js
 
-    response = requests.get(url=url, headers=header)
-    result = json.loads(response.content.decode('utf-8'))
-    with open("./time.txt", "r") as f:
-        new_time = f.readlines()[0]
-    # new_time = '2023-05-26 10:31:10+08:00'
-    print(new_time)
-    new_time = datetime.fromisoformat(new_time)
-    for item in result['data']['list']:
-        # 将给定时间字符串转换为 datetime 对象
-        datetime_obj = datetime.strptime(item['created_at'], "%a %b %d %H:%M:%S %z %Y")
-        # 获取当前时间，并设置时区信息为给定时间的时区信息
-        current_time = datetime.now(timezone.utc).astimezone(datetime_obj.tzinfo)
-        # current_time = "2023-05-26 13:19:27+08:00"
-        # current_time = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S%z")
-        # print("当前时间：{}".format(current_time))
-        # 比较给定时间是否早于当前时间
-        if new_time < datetime_obj:
-            new_time = datetime_obj
-            print("新发言，时间已更新".format(datetime_obj))
-            print(item['text'])
-            with open("./time.txt", "w+") as f:
-                f.write(str(new_time))
-        else:
-            print("{}发帖时间晚于或等于当前时间".format(datetime_obj))
+
+def main(corp_id, corp_secret, agent_id, time_file_path):
+    try:
+        url = "https://weibo.com/ajax/statuses/mymblog?uid=7769778635&page=1&feature=0"
+        header = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'Cache-Control': 'max-age=0',
+            'Cookie': 'XSRF-TOKEN=iviBIqPXJuuK_iOdqT8R2vnw; SUB=_2AkMTLNUnf8NxqwFRmfkXzW3kaYxzww7EieKlcCT8JRMxHRl-yT9vqnZStRB6OKz7yCac7cbolPuQCcRCOzonkD4TnqAF; SUBP=0033WrSXqPxfM72-Ws9jqgMF55529P9D9W5EXnGCOUZiBSbrCw8ZUYX3; WBPSESS=HOKMwFaOhMG7Cl30d6Y-8XIBLMI452kWIDg2ckiQniXNxwCnVZF61EfEdhSiWWjQoKl4he5G0MuW0aEV-D05O52gLQTbZCEyX1X92EVhQU-rpvz7uy18TnJLdj7behY7',
+            'Sec-Ch-Ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
+        }
+
+        response = requests.get(url=url, headers=header)
+        result = json.loads(response.content.decode('utf-8'))
+        with open(time_file_path, "r") as f:
+            new_time = f.readlines()[0]
+        # new_time = '2023-05-26 10:31:10+08:00'
+        print("已记录的发言时间为{}".format(new_time))
+        new_time = datetime.fromisoformat(new_time)
+        tmp = new_time
+        access_token, expires_in = get_access_token(corp_id, corp_secret)
+        for item in result['data']['list']:
+            # 将给定时间字符串转换为 datetime 对象
+            datetime_obj = datetime.strptime(item['created_at'], "%a %b %d %H:%M:%S %z %Y")
+            # 比较给定时间是否早于当前时间
+            if new_time < datetime_obj:
+                if tmp < datetime_obj:
+                    tmp = datetime_obj
+                print("{}新发言，时间已更新".format(datetime_obj))
+                print(item['text'])
+                new = "微博发言：\n" + item['text']
+                wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
+            else:
+                print("{}非新发言".format(datetime_obj))
+        new_time = tmp
+        with open(time_file_path, "w+") as f:
+            f.write(str(new_time))
+    except Exception as e:
+        result = 'Except：' + str(e) + "Line：" + str(e.__traceback__.tb_lineno)
+        print(result)
+        new = "访问出错\n" + result
+        wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
 
 
 if __name__ == "__main__":
-    main()
+    op = time.time()
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    print('-------运行时间：{}'.format(now) + '-------')
+    config = configparser.ConfigParser()
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    father_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    config_path = basedir + r'/config.ini'
+    time_file_path = basedir + r'/time.txt'
+    print('config_path：' + config_path)
+    config.read(config_path, encoding="utf-8")
+    corp_id = json.loads(config['wechat']['corp_id'])
+    corp_secret = json.loads(config['wechat']['corp_secret'])
+    agent_id = json.loads(config['wechat']['agent_id'])
+    main(corp_id, corp_secret, agent_id, time_file_path)
+    elapsed = (time.time() - op)
+    print('-------用时：{}'.format(elapsed) + '-------')
