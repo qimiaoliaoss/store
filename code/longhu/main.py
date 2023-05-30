@@ -97,6 +97,59 @@ def youzi():
         print('错误信息：' + str(e) + "，错误行数：" + str(e.__traceback__.tb_lineno))
 
 
+def get_answer(question, secondary_intent):
+    url = 'http://www.iwencai.com/customized/chart/get-robot-data'
+
+    data = {
+        'add_info': "{\"urp\":{\"scene\":1,\"company\":1,\"business\":1},\"contentType\":\"json\",\"searchInfo\":true}",
+        'block_list': "",
+        'log_info': "{\"input_type\":\"typewrite\"}",
+        'page': 1,
+        'perpage': 50,
+        'query_area': "",
+        'question': question,
+        'rsh': "Ths_iwencai_Xuangu_y1wgpofrs18ie6hdpf0dvhkzn2myx8yq",
+        'secondary_intent': secondary_intent,
+        'source': "Ths_iwencai_Xuangu",
+        'version': "2.0"
+    }
+
+    session.headers['hexin-v'] = get_hexin_v(get_server_time())
+    session.headers['Content-Type'] = 'application/json'
+    resp = session.post(url, data=json.dumps(data))
+    result = resp.json()
+    resp.close()
+    return result
+
+
+def wencai():
+    data = get_answer('今日涨停的股票；非ST；所属概念；连板天数；最终涨停时间', 'stock')
+    result = data['data']['answer'][0]['txt'][0]['content']['components'][0]['data']['datas']
+    big_list = []
+    for i in result:
+        big_list += i['所属概念'].split(';')
+    counter = dict(Counter(big_list))
+    to_del = ['融资融券', '转融券标的', '华为概念', '富时罗素概念股', '标普道琼斯A股', '沪股通', '富时罗素概念', '深股通', '国企改革', '地方国企改革']
+    for deling in to_del:
+        try:
+            del counter[deling]
+        except:
+            pass
+    # print(counter)
+    stop_words = {'你', '我', '他', '啊', '的', '了', '2022', '明天', '今天', '怎么', '记录', '讨论', '雪球', '没有', '是不是', '吐槽', '融资',
+                  '融券', '富时', '罗素', '与'}
+    word_cloud = WordCloud(font_path=r"C:\Windows\Fonts\SimHei.ttf",
+                           width=1000,
+                           height=700,
+                           background_color="white",
+                           stopwords=stop_words)
+    word_cloud.generate_from_frequencies(counter)
+    # word_cloud.generate(text)
+    # print(text_cut)
+    file_name = '%s.png' % time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+    word_cloud.to_file(file_name)
+
+
 def main():
     try:
         # value = r.get('youzi_dict')
@@ -118,9 +171,7 @@ def main():
         # three = html.xpath('//*[@id="ggmx"]/div[2]/div[3]/div[1]/div/div/table/tbody/tr/td[1]/label/text()')
         tmp_code = []
         for i in range(len(code)):
-            if '退' not in name[i] and '转债' not in name[i] and code[i][:2] not in ["82", "83", "87", "88"] and code[i][
-                                                                                                              :3] not in [
-                "900"]:
+            if '退' not in name[i] and '转债' not in name[i] and code[i][:2] not in ["82", "83", "87", "88"] and code[i][:3] not in ["900"]:
                 tmp_code.append(code[i])
         my_code = list(set(tmp_code))
         my_list = []
@@ -201,4 +252,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    wencai()
