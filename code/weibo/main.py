@@ -9,6 +9,8 @@ from datetime import datetime
 import configparser
 import os
 import time
+from requests_toolbelt import MultipartEncoder
+import platform
 
 
 def get_access_token(corp_id, corp_secret):
@@ -19,6 +21,29 @@ def get_access_token(corp_id, corp_secret):
         access_token = js["access_token"]
         expires_in = js["expires_in"]
         return access_token, expires_in
+
+
+def wechat_push_img(agent_id, access_token, media_id):
+    data = {
+        "touser": "@all",
+        "msgtype": "image",
+        "agentid": agent_id,
+        "image": {
+            "media_id": media_id
+        },
+        "enable_duplicate_check": 0,
+        "duplicate_check_interval": 1800
+    }
+    # print(data)
+    resp = requests.post(f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}&debug=1',
+                         json=data)
+    js = json.loads(resp.text)
+    # print(js)
+    if js["errcode"] == 0:
+        print('图片发送成功')
+        return js
+    else:
+        print(js)
 
 
 def wechat_push_text(agent_id, access_token, message):
@@ -39,6 +64,18 @@ def wechat_push_text(agent_id, access_token, message):
     # print(js)
     if js["errcode"] == 0:
         return js
+
+
+def upload_img(filename, access_token):
+    post_file_url = 'https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token={}&type=image'.format(access_token)
+    m = MultipartEncoder(
+        fields={filename: ('file', open(current_dir + filename, 'rb'), 'text/plain')},
+    )
+    r = requests.post(url=post_file_url, data=m, headers={'Content-Type': m.content_type})
+    # print(r.text)
+    r = json.loads(r.text)
+    # print(r['media_id'])
+    return r['media_id']
 
 
 def main(corp_id, corp_secret, agent_id, time_file_path):
@@ -75,6 +112,41 @@ def main(corp_id, corp_secret, agent_id, time_file_path):
             datetime_obj = datetime.strptime(item['created_at'], "%a %b %d %H:%M:%S %z %Y")
             # 比较给定时间是否早于当前时间
             if new_time < datetime_obj:
+                if item['pic_ids']:
+                    print('有图片')
+                    pic_url = []
+                    media = []
+                    for each in item['pic_ids']:
+                        pic_url.append('https://wx2.sinaimg.cn/mw690/' + each + '.jpg')
+                    # print(pic_url)
+                    for each in pic_url:
+                        header_2 = {
+                            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                            'Accept-Encoding': 'gzip, deflate, br',
+                            'Accept-Language': 'zh-CN,zh;q=0.9',
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache',
+                            'Referer': 'https://weibo.com/',
+                            'Sec-Ch-Ua': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+                            'Sec-Ch-Ua-Mobile': '?0',
+                            'Sec-Ch-Ua-Platform': '"Windows"',
+                            'Sec-Fetch-Dest': 'image',
+                            'Sec-Fetch-Mode': 'no-cors',
+                            'Sec-Fetch-Site': 'cross-site',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
+                        }
+                        response = requests.get(url=each, headers=header_2)
+                        if response.status_code == 200:
+                            # 从URL中获取文件名
+                            filename = each.split("/")[-1]
+                            # 保存图片到本地
+                            with open(filename, "wb") as file:
+                                file.write(response.content)
+                            print(f"图片保存成功：{filename}")
+                            media_tmp = upload_img(filename, access_token)
+                            wechat_push_img(agent_id, access_token, media_tmp)
+                        else:
+                            print("请求失败")
                 if tmp < datetime_obj:
                     tmp = datetime_obj
                 print("{}新发言，时间已更新".format(datetime_obj))
@@ -87,7 +159,7 @@ def main(corp_id, corp_secret, agent_id, time_file_path):
         with open(time_file_path, "w+") as f:
             f.write(str(new_time))
     except Exception as e:
-        result = 'Except：' + str(e) + "Line：" + str(e.__traceback__.tb_lineno)
+        result = 'Except：' + str(e) + "，Line：" + str(e.__traceback__.tb_lineno)
         print(result)
         new = "访问出错\n" + result
         wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
@@ -98,6 +170,11 @@ if __name__ == "__main__":
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     print('-------运行时间：{}'.format(now) + '-------')
     config = configparser.ConfigParser()
+    current_os = platform.system()
+    if current_os == 'Windows':
+        current_dir = os.getcwd() + '\\'
+    elif current_os == 'Linux':
+        current_dir = os.getcwd() + '/'
     basedir = os.path.abspath(os.path.dirname(__file__))
     father_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
     config_path = basedir + r'/config.ini'
