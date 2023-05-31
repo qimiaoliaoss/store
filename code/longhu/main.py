@@ -12,7 +12,6 @@ import requests
 import urllib3
 from lxml import etree
 import re
-import redis
 import json
 import datetime
 from collections import Counter
@@ -29,7 +28,6 @@ start_day = datetime.datetime.now() + datetime.timedelta(days=-31)
 str_start_day = start_day.strftime('%Y-%m-%d')
 
 
-# r = redis.Redis(host='localhost', port=6379, db=0)
 def get_proxy():
     return requests.get("https://proxy.ionssource.cn/get/").json()
 
@@ -92,7 +90,6 @@ def youzi():
             else:
                 print("{}无页面".format(i))
         print(youzi_dict)
-        # r.set('youzi_dict', json.dumps(youzi_dict))
     except Exception as e:
         print('错误信息：' + str(e) + "，错误行数：" + str(e.__traceback__.tb_lineno))
 
@@ -125,9 +122,12 @@ def get_answer(question, secondary_intent):
 def wencai():
     data = get_answer('今日涨停的股票；非ST；所属概念；连板天数；最终涨停时间', 'stock')
     result = data['data']['answer'][0]['txt'][0]['content']['components'][0]['data']['datas']
+    # print(result)
     big_list = []
     for i in result:
-        big_list += i['所属概念'].split(';')
+        # print(i)
+        if '所属概念' in i:
+            big_list += i['所属概念'].split(';')
     counter = dict(Counter(big_list))
     to_del = ['融资融券', '转融券标的', '华为概念', '富时罗素概念股', '标普道琼斯A股', '沪股通', '富时罗素概念', '深股通', '国企改革', '地方国企改革']
     for deling in to_del:
@@ -152,7 +152,6 @@ def wencai():
 
 def main():
     try:
-        # value = r.get('youzi_dict')
         # youzi_list = json.loads(value.decode())
         url = 'https://data.10jqka.com.cn/market/longhu/'
         info_heards = {
