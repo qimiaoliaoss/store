@@ -5,8 +5,6 @@
 # @Software: PyCharm
 import time
 import execjs
-import jieba
-import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import requests
 import urllib3
@@ -57,41 +55,6 @@ def get_hexin_v(time):
     js = execjs.compile(js_content)
     v = js.call("rt.updata")
     return v
-
-
-def youzi():
-    try:
-        youzi_dict = {}
-        for i in range(1, 62):
-            url = 'https://www.aijingu.com/youzi/' + str(i) + '.html'
-            info_heards = {
-                'Host': 'data.10jqka.com.cn',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
-                'Referer': 'https://www.google.com/',
-                'Cookie': 'refreshStat=off; v=Azqun_-eCunCB4YF0EPkfuaPi2tZ67-GMG4yYEQy5GqY1dTVLHsO1QD_gnsX',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'
-            }
-            response = requests.get(url=url, headers=info_heards, verify=False)
-            # print(response.status_code)
-            html = etree.HTML(response.content.decode('utf-8', errors='ignore'))
-            text = html.xpath('/html/body/div[3]/div[1]/p[1]/text()')
-            if text:
-                match = re.search(r"(.*)简介", text[0])
-                if match:
-                    name = match.group(1).strip()  # 获取匹配结果并删除空格
-                    # print(name)
-                    text_2 = list(set(html.xpath('/html/body/div[3]/div[3]/div/table/tbody/tr/td[9]/a/text()')))
-                    youzi_dict[name] = text_2
-                    describe = html.xpath('/html/body/div[3]/div[1]/p[2]/text()')[0].strip()
-                    # print(text_2)
-                    # print('{}、{}：{}\n营业部：{}'.format(i, name, describe, ','.join(text_2)))
-                else:
-                    print("页面内无匹配游资名称")
-            else:
-                print("{}无页面".format(i))
-        print(youzi_dict)
-    except Exception as e:
-        print('错误信息：' + str(e) + "，错误行数：" + str(e.__traceback__.tb_lineno))
 
 
 def get_answer(question, secondary_intent):
@@ -152,7 +115,6 @@ def wencai():
 
 def main():
     try:
-        # youzi_list = json.loads(value.decode())
         url = 'https://data.10jqka.com.cn/market/longhu/'
         info_heards = {
             'Host': 'data.10jqka.com.cn',
