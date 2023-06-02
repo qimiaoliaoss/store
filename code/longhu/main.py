@@ -13,6 +13,12 @@ import re
 import json
 import datetime
 from collections import Counter
+import configparser
+from requests_toolbelt import MultipartEncoder
+import platform
+import os
+
+
 
 urllib3.disable_warnings()
 session = requests.session()
@@ -24,6 +30,71 @@ today = datetime.datetime.now()
 str_today = today.strftime('%Y-%m-%d')
 start_day = datetime.datetime.now() + datetime.timedelta(days=-31)
 str_start_day = start_day.strftime('%Y-%m-%d')
+
+
+def wechat_push_text(agent_id, access_token, message):
+    data = {
+        "touser": "@all",
+        "msgtype": 'text',
+        "agentid": agent_id,
+        "text": {
+            "content": message
+        },
+        "safe": 0,
+        "enable_id_trans": 0,
+        "enable_duplicate_check": 0,
+        "duplicate_check_interval": 1800
+    }
+    resp = requests.post(f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}', json=data)
+    js = json.loads(resp.text)
+    # print(js)
+    if js["errcode"] == 0:
+        return js
+
+
+def get_access_token(corp_id, corp_secret):
+    resp = requests.get(f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corp_id}&corpsecret={corp_secret}')
+    js = json.loads(resp.text)
+    # print(js)
+    if js["errcode"] == 0:
+        access_token = js["access_token"]
+        expires_in = js["expires_in"]
+        return access_token, expires_in
+
+
+def wechat_push_img(agent_id, access_token, media_id):
+    data = {
+        "touser": "@all",
+        "msgtype": "image",
+        "agentid": agent_id,
+        "image": {
+            "media_id": media_id
+        },
+        "enable_duplicate_check": 0,
+        "duplicate_check_interval": 1800
+    }
+    # print(data)
+    resp = requests.post(f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}&debug=1',
+                         json=data)
+    js = json.loads(resp.text)
+    # print(js)
+    if js["errcode"] == 0:
+        print('图片发送成功')
+        return js
+    else:
+        print(js)
+
+
+def upload_img(filename, access_token):
+    post_file_url = 'https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token={}&type=image'.format(access_token)
+    m = MultipartEncoder(
+        fields={filename: ('file', open(current_dir + filename, 'rb'), 'text/plain')},
+    )
+    r = requests.post(url=post_file_url, data=m, headers={'Content-Type': m.content_type})
+    # print(r.text)
+    r = json.loads(r.text)
+    # print(r['media_id'])
+    return r['media_id']
 
 
 def get_proxy():
@@ -83,34 +154,43 @@ def get_answer(question, secondary_intent):
 
 
 def wencai():
-    data = get_answer('今日涨停的股票；非ST；所属概念；连板天数；最终涨停时间', 'stock')
-    result = data['data']['answer'][0]['txt'][0]['content']['components'][0]['data']['datas']
-    # print(result)
-    big_list = []
-    for i in result:
-        # print(i)
-        if '所属概念' in i:
-            big_list += i['所属概念'].split(';')
-    counter = dict(Counter(big_list))
-    to_del = ['融资融券', '转融券标的', '华为概念', '富时罗素概念股', '标普道琼斯A股', '沪股通', '富时罗素概念', '深股通', '国企改革', '地方国企改革']
-    for deling in to_del:
-        try:
-            del counter[deling]
-        except:
-            pass
-    # print(counter)
-    stop_words = {'你', '我', '他', '啊', '的', '了', '2022', '明天', '今天', '怎么', '记录', '讨论', '雪球', '没有', '是不是', '吐槽', '融资',
-                  '融券', '富时', '罗素', '与'}
-    word_cloud = WordCloud(font_path=r"C:\Windows\Fonts\SimHei.ttf",
-                           width=1000,
-                           height=700,
-                           background_color="white",
-                           stopwords=stop_words)
-    word_cloud.generate_from_frequencies(counter)
-    # word_cloud.generate(text)
-    # print(text_cut)
-    file_name = '%s.png' % time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-    word_cloud.to_file(file_name)
+    try:
+        data = get_answer('今日涨停的股票；非ST；所属概念；连板天数；最终涨停时间', 'stock')
+        result = data['data']['answer'][0]['txt'][0]['content']['components'][0]['data']['datas']
+        # print(result)
+        big_list = []
+        for i in result:
+            # print(i)
+            if '所属概念' in i:
+                big_list += i['所属概念'].split(';')
+        counter = dict(Counter(big_list))
+        to_del = ['融资融券', '转融券标的', '华为概念', '富时罗素概念股', '标普道琼斯A股', '沪股通', '富时罗素概念', '深股通', '国企改革', '地方国企改革']
+        for deling in to_del:
+            try:
+                del counter[deling]
+            except:
+                pass
+        # print(counter)
+        stop_words = {'你', '我', '他', '啊', '的', '了', '2022', '明天', '今天', '怎么', '记录', '讨论', '雪球', '没有', '是不是', '吐槽', '融资',
+                      '融券', '富时', '罗素', '与'}
+        word_cloud = WordCloud(font_path=r"C:\Windows\Fonts\SimHei.ttf",
+                               width=1000,
+                               height=700,
+                               background_color="white",
+                               stopwords=stop_words)
+        word_cloud.generate_from_frequencies(counter)
+        # word_cloud.generate(text)
+        # print(text_cut)
+        file_name = '%s.png' % time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        word_cloud.to_file(file_name)
+        access_token, expires_in = get_access_token(corp_id, corp_secret)
+        media_tmp = upload_img(file_name, access_token)
+        wechat_push_img(agent_id, access_token, media_tmp)
+    except Exception as e:
+        result = 'Except：' + str(e) + "，Line：" + str(e.__traceback__.tb_lineno)
+        print(result)
+        new = "概念云图生成出错\n" + result
+        wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
 
 
 def main():
@@ -213,5 +293,20 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    config = configparser.ConfigParser()
+    current_os = platform.system()
+    if current_os == 'Windows':
+        current_dir = os.getcwd() + '\\'
+    elif current_os == 'Linux':
+        current_dir = os.getcwd() + '/'
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    father_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    config_path = basedir + r'/config.ini'
+    time_file_path = basedir + r'/time.txt'
+    print('config_path：' + config_path)
+    config.read(config_path, encoding="utf-8")
+    corp_id = json.loads(config['wechat']['corp_id'])
+    corp_secret = json.loads(config['wechat']['corp_secret'])
+    agent_id = json.loads(config['wechat']['agent_id'])
     wencai()
+
