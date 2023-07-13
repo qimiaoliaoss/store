@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time : 2023/5/26 14:31
 # @Author : Losir
-# @FileName: main.py
+# @FileName: app.py
 # @Software: PyCharm
 import requests
 import json
