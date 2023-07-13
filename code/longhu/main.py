@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time : 2023/5/11 16:29
 # @Author : Losir
-# @FileName: main.py
+# @FileName: app.py
 # @Software: PyCharm
 import time
 import execjs
@@ -17,6 +17,7 @@ import configparser
 from requests_toolbelt import MultipartEncoder
 import platform
 import os
+import matplotlib.pyplot as plt
 
 
 
@@ -153,7 +154,7 @@ def get_answer(question, secondary_intent):
     return result
 
 
-def wencai():
+def yun_tu():
     try:
         data = get_answer('今日涨停的股票；非ST；所属概念；连板天数；最终涨停时间', 'stock')
         result = data['data']['answer'][0]['txt'][0]['content']['components'][0]['data']['datas']
@@ -186,6 +187,72 @@ def wencai():
         access_token, expires_in = get_access_token(corp_id, corp_secret)
         media_tmp = upload_img(file_name, access_token)
         wechat_push_img(agent_id, access_token, media_tmp)
+    except Exception as e:
+        result = 'Except：' + str(e) + "，Line：" + str(e.__traceback__.tb_lineno)
+        print(result)
+        new = "概念云图生成出错\n" + result
+        wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
+
+
+def wencai():
+    try:
+        plt.rcParams['font.family'] = 'simhei'
+        plt.rcParams['font.sans-serif'] = ['simhei']
+        plt.rcParams['axes.unicode_minus'] = False
+        data = get_answer('今日涨停的股票；非ST；所属概念；连板天数；最终涨停时间', 'stock')
+        result = data['data']['answer'][0]['txt'][0]['content']['components'][0]['data']['datas']
+        # print(result)
+        big_list = []
+        for i in result:
+            # print(i)
+            if '所属概念' in i:
+                big_list += i['所属概念'].split(';')
+        counter = dict(Counter(big_list))
+        to_del = ['融资融券', '转融券标的', '华为概念', '富时罗素概念股', '标普道琼斯A股', '沪股通', '富时罗素概念', '深股通', '国企改革', '地方国企改革']
+        for deling in to_del:
+            try:
+                del counter[deling]
+            except:
+                pass
+        # print(counter)
+        # 对字典按值从大到小排序
+        sorted_data = sorted(counter.items(), key=lambda x: x[1], reverse=True)
+
+        # 获取排行前十的数据
+        top_10 = sorted_data[:10]
+
+        # 解析标签和数值
+        labels = [d[0] for d in top_10]
+        values = [d[1] for d in top_10]
+
+        # 生成饼状图并保存到本地
+        fig, ax = plt.subplots()
+        ax.pie(values, labels=labels, autopct='%1.1f%%')
+        ax.set_title("Top 10")
+        # plt.show()
+        file_name = '%s.png' % time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        plt.savefig(file_name)
+        # stop_words = {'你', '我', '他', '啊', '的', '了', '2022', '明天', '今天', '怎么', '记录', '讨论', '雪球', '没有', '是不是', '吐槽', '融资',
+        #               '融券', '富时', '罗素', '与'}
+        # if current_os == 'Windows':
+        #     word_cloud = WordCloud(font_path=r"C:\Windows\Fonts\SimHei.ttf",
+        #                            width=1000,
+        #                            height=700,
+        #                            background_color="white",
+        #                            stopwords=stop_words)
+        # elif current_os == 'Linux':
+        #     word_cloud = WordCloud(font_path=font_path,
+        #                            width=1000,
+        #                            height=700,
+        #                            background_color="white",
+        #                            stopwords=stop_words)
+        # word_cloud.generate_from_frequencies(counter)
+        # # word_cloud.generate(text)
+        # # print(text_cut)
+        # file_name = '%s.png' % time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+        # word_cloud.to_file(file_name)
+        # media_tmp = upload_img(file_name, access_token)
+        # wechat_push_img(agent_id, access_token, media_tmp)
     except Exception as e:
         result = 'Except：' + str(e) + "，Line：" + str(e.__traceback__.tb_lineno)
         print(result)
@@ -296,17 +363,21 @@ if __name__ == "__main__":
     config = configparser.ConfigParser()
     current_os = platform.system()
     if current_os == 'Windows':
-        current_dir = os.getcwd() + '\\'
+        current_dir = os.getcwd() + r'\\'
     elif current_os == 'Linux':
         current_dir = os.getcwd() + '/'
     basedir = os.path.abspath(os.path.dirname(__file__))
     father_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
     config_path = basedir + r'/config.ini'
     time_file_path = basedir + r'/time.txt'
+    font_path = r'/usr/share/fonts/SmileySans-Oblique.ttf'
     print('config_path：' + config_path)
+    print('font_path：{}'.format(font_path))
     config.read(config_path, encoding="utf-8")
     corp_id = json.loads(config['wechat']['corp_id'])
     corp_secret = json.loads(config['wechat']['corp_secret'])
     agent_id = json.loads(config['wechat']['agent_id'])
+    access_token, expires_in = get_access_token(corp_id, corp_secret)
     wencai()
+    # yun_tu()
 
