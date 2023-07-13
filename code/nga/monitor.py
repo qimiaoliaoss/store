@@ -24,11 +24,11 @@ requests.packages.urllib3.disable_warnings()
 
 
 def get_proxy():
-    return requests.get("https://proxy.ionssource.cn/get/").json()
+    return requests.get("https://{}/get/".format(proxy_domain)).json()
 
 
 def delete_proxy(proxy):
-    requests.get("https://proxy.ionssource.cn/delete/?proxy={}".format(proxy))
+    requests.get("https://{}/delete/?proxy={}".format(proxy_domain, proxy))
 
 
 def get_HTML(url1):
@@ -50,7 +50,7 @@ def get_HTML(url1):
 
 
 def notify(new, tar):
-    api = "https://sctapi.ftqq.com/SCT14710Tb1DiNZ09b0Wdg9wSh9DD6E2H.send"
+    api = "https://sctapi.ftqq.com/{}.send".format(server_key)
     title = config[tar]['name'] + '新消息'
     content = new
     data = {
@@ -199,6 +199,8 @@ if __name__ == "__main__":
     print("共有%d个监控项，%s" % (len(config.sections()) - 2, sections))
     header = json.loads(config['account']['header'])
     cookie = json.loads(config['account']['ck'])
+    proxy_domain = config['account']['proxy']
+    server_key = config['account']['key']
     print("载入用户：%s" % (cookie["ngaPassportUrlencodedUname"]))
     # for each in sections:
     #     if "target" in each:
