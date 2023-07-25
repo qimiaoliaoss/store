@@ -228,7 +228,7 @@ def wencai():
         # 生成饼状图并保存到本地
         fig, ax = plt.subplots()
         ax.pie(values, labels=labels, autopct='%1.1f%%')
-        ax.set_title("Top 10")
+        ax.set_title("{}涨停概念Top 10".format(time.strftime("%Y-%m-%d", time.localtime())))
         # plt.show()
         file_name = '%s.png' % time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         plt.savefig(file_name)
@@ -251,8 +251,8 @@ def wencai():
         # # print(text_cut)
         # file_name = '%s.png' % time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         # word_cloud.to_file(file_name)
-        # media_tmp = upload_img(file_name, access_token)
-        # wechat_push_img(agent_id, access_token, media_tmp)
+        media_tmp = upload_img(file_name, access_token)
+        wechat_push_img(agent_id, access_token, media_tmp)
     except Exception as e:
         result = 'Except：' + str(e) + "，Line：" + str(e.__traceback__.tb_lineno)
         print(result)
