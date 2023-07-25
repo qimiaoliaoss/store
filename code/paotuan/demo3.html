@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>挂机修仙游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            color: #4682B4;
+        }
+
+        #gamePanel, #shop {
+            margin: 20px;
+            padding: 10px;
+            border: 2px solid #4682B4;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        #shop {
+            display: none;
+        }
+
+        button {
+            background-color: #4682B4;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+    </style>
+</head>
+<body>
+    <h1>挂机修仙游戏</h1>
+    <div id="gamePanel">
+        <p>当前灵力: <span id="spirit">0</span></p>
+        <p>灵石: <span id="currency">0</span></p>
+        <p>装备1: <span id="equipment1">无</span> (耐久度: <span id="durability1">0</span>)</p>
+        <p>装备2: <span id="equipment2">无</span> (耐久度: <span id="durability2">0</span>)</p>
+        <p>当前境界: <span id="realm">凡人</span></p> <!-- 显示当前境界 -->
+        <p>下一境界所需灵力: <span id="nextRealmThreshold">1000</span></p> <!-- 显示下一境界所需的灵力值 -->
+        <button onclick="meditate()">冥想</button>
+        <button onclick="outdoorTraining()">外出历练</button>
+        <button onclick="realmUpgrade()">突破境界</button> <!-- 新增突破按钮 -->
+        <button onclick="openShop()">打开商店</button>
+        <button onclick="resetGame()">重置游戏</button>
+    </div>
+    <div id="shop">
+        <h2>商店</h2>
+        <p>灵石: <span id="shopCurrency">0</span></p>
+        <button onclick="buyItem('剑', 10)">购买剑(10灵石)</button>
+        <button onclick="buyItem('药', 5)">购买药(5灵石)</button>
+        <button onclick="closeShop()">关闭商店</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
