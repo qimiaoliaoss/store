@@ -16,33 +16,21 @@ const realmThresholds = {
 // 每个境界对应的灵力增加速度
 const spiritIncreaseSpeeds = {
     "凡人": 0, // 凡人境界不增加灵力
-    "开化": 1, // 开化境每秒增加1点灵力
-    "筋骨": 5, // 筋骨境每秒增加5点灵力
-    "锻体": 10, // 锻体境每秒新增10点灵力
-    "炼气": 20, // 炼气境每秒新增20点灵力
-    "入窍": 30, // 入窍境每秒新增30点灵力
-    "通神": 40, // 通神境每秒新增40点灵力
-    "金丹": 50, // 金丹境每秒新增50点灵力
-    "元婴": 100, // 元婴境每秒新增100点灵力
-    "化神": 150, // 化神境每秒新增150点灵力
+    "开化": 5, // 开化境每秒增加1点灵力
+    "筋骨": 10, // 筋骨境每秒增加5点灵力
+    "锻体": 50, // 锻体境每秒新增10点灵力
+    "炼气": 100, // 炼气境每秒新增20点灵力
+    "入窍": 200, // 入窍境每秒新增30点灵力
+    "通神": 400, // 通神境每秒新增40点灵力
+    "金丹": 2000, // 金丹境每秒新增50点灵力
+    "元婴": 5000, // 元婴境每秒新增100点灵力
+    "化神": 10000, // 化神境每秒新增150点灵力
 };
 
 // 突破到某个境界时的效果
 function onRealmUpgrade(realm) {
     const spiritIncreaseSpeed = spiritIncreaseSpeeds[realm]; // 默认每秒增加20点灵力
     startAutoIncreaseSpirit(spiritIncreaseSpeed);
-
-    // 判断玩家当前灵力是否超过了突破到下一个境界所需的灵力阈值
-    const nextRealm = getNextRealm(realm);
-    if (nextRealm) {
-        const threshold = realmThresholds[nextRealm];
-        if (playerData.spirit >= threshold) {
-            // 如果灵力超过了阈值，则继续保留超过的灵力值
-            playerData.spirit = playerData.spirit - threshold;
-            playerData.realm = nextRealm;
-            onRealmUpgrade(playerData.realm); // 触发自动增加灵力的效果
-        }
-    }
 }
 
 // 开始自动增加灵力
@@ -116,8 +104,9 @@ function updateUI() {
     document.getElementById("durability1").textContent = playerData.durability1;
     document.getElementById("durability2").textContent = playerData.durability2;
     document.getElementById("shopCurrency").textContent = playerData.currency;
-    
+
     const nextRealm = getNextRealm(playerData.realm);
+    onRealmUpgrade(playerData.realm);// 在加载玩家数据后重新设置自动增加灵力的效果
     document.getElementById("realm").textContent = playerData.realm;
     document.getElementById("nextRealmThreshold").textContent = nextRealm ? realmThresholds[nextRealm] : "已达最高境界";
 
@@ -218,7 +207,8 @@ function realmUpgrade() {
                 alert(`很遗憾，突破到${nextRealm}境界失败，灵力消耗殆尽！`);
             } else {
                 // 突破成功
-                playerData.spirit = 0;
+                // playerData.spirit = 0;
+                playerData.spirit = playerData.spirit - threshold;
                 playerData.realm = nextRealm;
                 updateUI();
                 savePlayerData();
