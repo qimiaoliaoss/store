@@ -29,7 +29,7 @@ const spiritIncreaseSpeeds = {
 
 // 突破到某个境界时的效果
 function onRealmUpgrade(realm) {
-    const spiritIncreaseSpeed = spiritIncreaseSpeeds[realm] || 20; // 默认每秒增加20点灵力
+    const spiritIncreaseSpeed = spiritIncreaseSpeeds[realm]; // 默认每秒增加20点灵力
     startAutoIncreaseSpirit(spiritIncreaseSpeed);
 
     // 判断玩家当前灵力是否超过了突破到下一个境界所需的灵力阈值
@@ -102,6 +102,7 @@ function resetGame() {
         equipment2: "无",
         durability1: 0,
         durability2: 0,
+        realm: "凡人", // 设置默认境界为"凡人"
     };
     updateUI();
     savePlayerData();
@@ -115,15 +116,11 @@ function updateUI() {
     document.getElementById("durability1").textContent = playerData.durability1;
     document.getElementById("durability2").textContent = playerData.durability2;
     document.getElementById("shopCurrency").textContent = playerData.currency;
+    
+    const nextRealm = getNextRealm(playerData.realm);
+    document.getElementById("realm").textContent = playerData.realm;
+    document.getElementById("nextRealmThreshold").textContent = nextRealm ? realmThresholds[nextRealm] : "已达最高境界";
 
-    // 特殊处理灵力为0的情况
-    if (playerData.spirit === 0) {
-        document.getElementById("realm").textContent = "凡人"; // 灵力为0时显示为"凡人"
-        document.getElementById("nextRealmThreshold").textContent = realmThresholds["锻体"]; // 灵力为0时下一境界所需灵力为"锻体"的阈值
-    } else {
-        document.getElementById("realm").textContent = playerData.realm; // 显示当前境界
-        document.getElementById("nextRealmThreshold").textContent = realmThresholds[getNextRealm(playerData.realm)]; // 显示下一境界所需的灵力值
-    }
 }
 
 
@@ -223,10 +220,10 @@ function realmUpgrade() {
                 // 突破成功
                 playerData.spirit = 0;
                 playerData.realm = nextRealm;
-                onRealmUpgrade(playerData.realm); // 触发自动增加灵力的效果
                 updateUI();
                 savePlayerData();
                 alert(`恭喜你突破到了${nextRealm}境界！`);
+                startAutoIncreaseSpirit(spiritIncreaseSpeeds[playerData.realm]); // 触发自动增加灵力的效果
             }
         } else {
             alert(`灵力不足，突破到${nextRealm}境界需要${threshold}灵力！`);
@@ -240,8 +237,8 @@ function getFailureChance(nextRealm) {
     const realms = Object.keys(realmThresholds);
     const currentIndex = realms.indexOf(nextRealm);
     if (currentIndex !== -1) {
-        // 失败概率随境界递增
-        return (currentIndex + 1) * 0.1; // 假设每高一境界，失败概率增加10%
+        // 失败概率随境界递增，但不会超过50%
+        return Math.min((currentIndex + 1) * 0.05, 0.5); // 假设每高一境界，失败概率增加5%，最大不超过50%
     }
     return 0;
 }
