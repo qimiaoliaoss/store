@@ -27,6 +27,32 @@ const spiritIncreaseSpeeds = {
     "化神": 10000, // 化神境每秒新增150点灵力
 };
 
+const shopItems = [
+    {
+        name: "剑",
+        price: 10,
+        description: "购买后增加剑的耐久度，剑的耐久度降低时消失。",
+    },
+    {
+        name: "药",
+        price: 5,
+        description: "购买后用于抵消外出历练失败时灵力清零的效果。",
+    },
+    {
+        name: "秘笈1",
+        price: 20,
+        description: "购买后提高点击冥想时获得的灵力值5点。",
+        spiritIncrease: 5,
+    },
+    {
+        name: "秘笈2",
+        price: 50,
+        description: "购买后提高点击冥想时获得的灵力值10点。",
+        spiritIncrease: 10,
+    },
+  // 可以继续添加更多的商品信息
+];
+
 // 突破到某个境界时的效果
 function onRealmUpgrade(realm) {
     const spiritIncreaseSpeed = spiritIncreaseSpeeds[realm]; // 默认每秒增加20点灵力
@@ -59,16 +85,6 @@ function getCookie(name) {
     return cookieValue ? cookieValue.pop() : '';
 }
 
-let playerData = {
-    spirit: 0,
-    currency: 0,
-    equipment1: "无",
-    equipment2: "无",
-    durability1: 0,
-    durability2: 0,
-    realm: "凡人", // 设置默认境界为"凡人"
-};
-
 function savePlayerData() {
     setCookie("playerData", JSON.stringify(playerData));
 }
@@ -82,6 +98,44 @@ function loadPlayerData() {
     updateUI(); // 更新 UI 显示
 }
 
+let playerData = {
+    spirit: 0,
+    currency: 0,
+    equipment1: "无",
+    equipment2: "无",
+    durability1: 0,
+    durability2: 0,
+    realm: "凡人", // 设置默认境界为"凡人"
+    // 添加用于记录购买秘笈数量的属性
+    purchasedItems: {
+        "秘笈1": 0,
+        "秘笈2": 0,
+        // 可以根据需要添加更多秘笈
+    },
+    // 添加用于记录不同秘笈对灵力增加的效果
+    spiritIncreases: {
+        "秘笈1": 0,
+        "秘笈2": 0,
+        // 可以根据需要添加更多秘笈
+    },
+};
+
+const secretBooks = [
+    {
+        name: "秘笈1",
+        price: 20,
+        spiritIncrease: 10,
+        description: "购买后每次冥想增加10点灵力。",
+    },
+    {
+        name: "秘笈2",
+        price: 30,
+        spiritIncrease: 20,
+        description: "购买后每次冥想增加20点灵力。",
+    },
+    // 可以根据需要添加更多秘笈
+];
+
 function resetGame() {
     playerData = {
         spirit: 0,
@@ -91,6 +145,18 @@ function resetGame() {
         durability1: 0,
         durability2: 0,
         realm: "凡人", // 设置默认境界为"凡人"
+        // 添加用于记录购买秘笈数量的属性
+        purchasedItems: {
+            "秘笈1": 0,
+            "秘笈2": 0,
+            // 可以根据需要添加更多秘笈
+        },
+        // 添加用于记录不同秘笈对灵力增加的效果
+        spiritIncreases: {
+            "秘笈1": 0,
+            "秘笈2": 0,
+            // 可以根据需要添加更多秘笈
+        },
     };
     updateUI();
     savePlayerData();
@@ -114,7 +180,15 @@ function updateUI() {
 
 
 function meditate() {
-    playerData.spirit += 1; // 模拟冥想获得灵力
+    // 增加基础灵力
+    let totalSpiritIncrease = 1; // 基础冥想灵力增加为1
+
+    // 累加购买的秘笈对灵力增加的效果
+    for (const itemName in playerData.spiritIncreases) {
+        totalSpiritIncrease += playerData.spiritIncreases[itemName];
+    }
+
+    playerData.spirit += totalSpiritIncrease; // 模拟冥想获得灵力
     updateUI();
     savePlayerData();
 }
@@ -234,8 +308,33 @@ function getFailureChance(nextRealm) {
 }
 
 function openShop() {
-    document.getElementById("gamePanel").style.display = "none";
-    document.getElementById("shop").style.display = "block";
+  document.getElementById("gamePanel").style.display = "none";
+  document.getElementById("shop").style.display = "block";
+
+  const shopItemsContainer = document.getElementById("shopItemsContainer");
+  shopItemsContainer.innerHTML = ""; // 清空商店商品容器
+
+  for (const item of shopItems) {
+    const itemName = item.name;
+    const price = item.price;
+    const description = item.description;
+
+    const itemDiv = document.createElement("div");
+    itemDiv.classList.add("shopItem"); // 添加商品格子的样式类
+
+    const itemButton = document.createElement("button");
+    itemButton.textContent = `购买${itemName}(${price}灵石)`;
+    itemButton.onclick = function () {
+      buyItem(itemName, price);
+    };
+    itemDiv.appendChild(itemButton);
+
+    const descriptionP = document.createElement("p");
+    descriptionP.textContent = description;
+    itemDiv.appendChild(descriptionP);
+
+    shopItemsContainer.appendChild(itemDiv);
+  }
 }
 
 function closeShop() {
@@ -245,6 +344,12 @@ function closeShop() {
 
 function buyItem(itemName, price) {
     if (playerData.currency >= price) {
+        // 检查玩家是否已经购买过该秘笈五件
+        const purchasedCount = playerData.purchasedItems[itemName];
+        if (purchasedCount >= 5) {
+            alert("你已经购买过该秘笈的最大数量！");
+            return;
+        }
         playerData.currency -= price;
 
         // 检查玩家背包中是否已经有同类型的装备，如果有则替换；如果没有则添加到空槽位
@@ -269,6 +374,12 @@ function buyItem(itemName, price) {
                 // 替换装备1的药
                 playerData.equipment1 = itemName;
             }
+        } else if (itemName === "秘笈1" || itemName === "秘笈2") {
+            // 处理秘笈购买逻辑
+            const spiritIncrease = getItemSpiritIncrease(itemName);
+            playerData.spiritIncreases[itemName] += spiritIncrease; // 累加购买的秘笈对灵力增加的效果
+            // 增加玩家购买的秘笈数量
+            playerData.purchasedItems[itemName] += 1;
         }
 
         updateUI();
@@ -277,6 +388,16 @@ function buyItem(itemName, price) {
     } else {
         alert("灵石不足，购买失败！");
     }
+}
+
+function getItemSpiritIncrease(itemName) {
+    // 获取秘笈提供的灵力增加值
+    for (const item of shopItems) {
+        if (item.name === itemName && item.spiritIncrease) {
+            return item.spiritIncrease;
+        }
+    }
+    return 0;
 }
 
 // 初始化游戏

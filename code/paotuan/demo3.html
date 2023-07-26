@@ -23,7 +23,22 @@
         }
 
         #shop {
-            display: none;
+        display: none;
+        }
+
+        /* 添加用于显示商品的容器样式 */
+        #shopItemsContainer {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 三列网格布局，可以根据需要调整列数 */
+        gap: 20px;
+        margin-top: 20px;
+        }
+
+        .shopItem {
+        padding: 10px;
+        border: 2px solid #4682B4;
+        border-radius: 8px;
+        text-align: center;
         }
 
         button {
@@ -55,14 +70,13 @@
         <button onclick="outdoorTraining()">外出历练</button>
         <button onclick="realmUpgrade()">突破境界</button> <!-- 新增突破按钮 -->
         <button onclick="openShop()">打开商店</button>
-        <button onclick="resetGame()">重置游戏</button>
+        <button onclick="resetGame()">轮回转世</button>
     </div>
     <div id="shop">
-        <h2>商店</h2>
-        <p>灵石: <span id="shopCurrency">0</span></p>
-        <button onclick="buyItem('剑', 10)">购买剑(10灵石)</button>
-        <button onclick="buyItem('药', 5)">购买药(5灵石)</button>
-        <button onclick="closeShop()">关闭商店</button>
+      <h2>商店</h2>
+      <p>灵石: <span id="shopCurrency">0</span></p>
+      <div id="shopItemsContainer"></div>
+      <button onclick="closeShop()">关闭商店</button>
     </div>
     <script src="game.js"></script>
 </body>
