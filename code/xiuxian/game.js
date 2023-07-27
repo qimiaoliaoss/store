@@ -39,19 +39,83 @@ const shopItems = [
         description: "购买后用于抵消外出历练失败时灵力清零的效果。",
     },
     {
-        name: "秘笈1",
+        name: "秘笈残页",
         price: 20,
         description: "购买后提高点击冥想时获得的灵力值5点。",
         spiritIncrease: 5,
     },
     {
-        name: "秘笈2",
+        name: "秘笈残卷",
         price: 50,
         description: "购买后提高点击冥想时获得的灵力值10点。",
         spiritIncrease: 10,
     },
   // 可以继续添加更多的商品信息
 ];
+
+const secretBooks = [
+    {
+        name: "秘笈残页",
+        price: 20,
+        spiritIncrease: 10,
+        description: "购买后每次冥想增加10点灵力。",
+    },
+    {
+        name: "秘笈残卷",
+        price: 30,
+        spiritIncrease: 20,
+        description: "购买后每次冥想增加20点灵力。",
+    },
+    // 可以根据需要添加更多秘笈
+];
+
+let playerData = {
+    spirit: 0,
+    currency: 0,
+    equipment1: "无",
+    equipment2: "无",
+    durability1: 0,
+    durability2: 0,
+    realm: "凡人", // 设置默认境界为"凡人"
+    // 添加用于记录购买秘笈数量的属性
+    purchasedItems: {
+        "秘笈残页": 0,
+        "秘笈残卷": 0,
+        // 可以根据需要添加更多秘笈
+    },
+    // 添加用于记录不同秘笈对灵力增加的效果
+    spiritIncreases: {
+        "秘笈残页": 0,
+        "秘笈残卷": 0,
+        // 可以根据需要添加更多秘笈
+    },
+};
+
+function resetGame() {
+    playerData = {
+        spirit: 0,
+        currency: 0,
+        equipment1: "无",
+        equipment2: "无",
+        durability1: 0,
+        durability2: 0,
+        realm: "凡人", // 设置默认境界为"凡人"
+        // 添加用于记录购买秘笈数量的属性
+        purchasedItems: {
+            "秘笈残页": 0,
+            "秘笈残卷": 0,
+            // 可以根据需要添加更多秘笈
+        },
+        // 添加用于记录不同秘笈对灵力增加的效果
+        spiritIncreases: {
+            "秘笈残页": 0,
+            "秘笈残卷": 0,
+            // 可以根据需要添加更多秘笈
+        },
+    };
+    updateUI();
+    savePlayerData();
+}
 
 // 突破到某个境界时的效果
 function onRealmUpgrade(realm) {
@@ -98,69 +162,6 @@ function loadPlayerData() {
     updateUI(); // 更新 UI 显示
 }
 
-let playerData = {
-    spirit: 0,
-    currency: 0,
-    equipment1: "无",
-    equipment2: "无",
-    durability1: 0,
-    durability2: 0,
-    realm: "凡人", // 设置默认境界为"凡人"
-    // 添加用于记录购买秘笈数量的属性
-    purchasedItems: {
-        "秘笈1": 0,
-        "秘笈2": 0,
-        // 可以根据需要添加更多秘笈
-    },
-    // 添加用于记录不同秘笈对灵力增加的效果
-    spiritIncreases: {
-        "秘笈1": 0,
-        "秘笈2": 0,
-        // 可以根据需要添加更多秘笈
-    },
-};
-
-const secretBooks = [
-    {
-        name: "秘笈1",
-        price: 20,
-        spiritIncrease: 10,
-        description: "购买后每次冥想增加10点灵力。",
-    },
-    {
-        name: "秘笈2",
-        price: 30,
-        spiritIncrease: 20,
-        description: "购买后每次冥想增加20点灵力。",
-    },
-    // 可以根据需要添加更多秘笈
-];
-
-function resetGame() {
-    playerData = {
-        spirit: 0,
-        currency: 0,
-        equipment1: "无",
-        equipment2: "无",
-        durability1: 0,
-        durability2: 0,
-        realm: "凡人", // 设置默认境界为"凡人"
-        // 添加用于记录购买秘笈数量的属性
-        purchasedItems: {
-            "秘笈1": 0,
-            "秘笈2": 0,
-            // 可以根据需要添加更多秘笈
-        },
-        // 添加用于记录不同秘笈对灵力增加的效果
-        spiritIncreases: {
-            "秘笈1": 0,
-            "秘笈2": 0,
-            // 可以根据需要添加更多秘笈
-        },
-    };
-    updateUI();
-    savePlayerData();
-}
 
 function updateUI() {
     document.getElementById("spirit").textContent = playerData.spirit;
@@ -374,7 +375,7 @@ function buyItem(itemName, price) {
                 // 替换装备1的药
                 playerData.equipment1 = itemName;
             }
-        } else if (itemName === "秘笈1" || itemName === "秘笈2") {
+        } else if (itemName === "秘笈残页" || itemName === "秘笈残卷") {
             // 处理秘笈购买逻辑
             const spiritIncrease = getItemSpiritIncrease(itemName);
             playerData.spiritIncreases[itemName] += spiritIncrease; // 累加购买的秘笈对灵力增加的效果
