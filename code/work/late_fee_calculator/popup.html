@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Late Fee Calculator</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      padding: 20px;
+      background-color: #ffffff;
+      border: 1px solid #dcdcdc;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input[type="date"],
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #dcdcdc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 8px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #resultContainer {
+      margin-top: 16px;
+    }
+
+    p {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 分页按钮 -->
+  <div id="pagination">
+    <button id="page1Button">滞纳金计算</button>
+    <button id="page2Button">金额转换</button>
+  </div>
+  <!-- Page 1: 滞纳金计算 -->
+  <div id="page1">
+    <h1>滞纳金计算</h1>
+    <label for="dateInput">请输入日期（格式：YYYY-MM-DD）：</label>
+    <input type="text" id="dateInput"><br>
+
+    <label for="principalInput">请输入本金：</label>
+    <input type="text" id="principalInput"><br>
+
+    <label for="lateFeeRateInput">请输入滞纳金率：</label>
+    <input type="text" id="lateFeeRateInput"><br>
+
+    <button id="calculateButton">计算滞纳金</button>
+
+    <div id="resultContainer"></div>
+  </div>
+    <!-- Page 2: 金额转换 -->
+  <div id="page2">
+    <!-- 金额转换页面内容 -->
+    <h1>金额转换</h1>
+    <label for="numberInput">请输入要转换的数字：</label>
+    <input type="text" id="numberInput">
+    <button id="convertButton_2">转换</button>
+    <div id="resultContainer_2"></div>
+  </div>
+
+
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Late Fee Calculator",
+  "version": "1.0",
+  "description": "Calculate late fee based on the given date.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab"]
+}
