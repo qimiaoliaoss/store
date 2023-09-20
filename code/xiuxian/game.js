@@ -30,22 +30,26 @@ const spiritIncreaseSpeeds = {
 const shopItems = [
     {
         name: "剑",
+        type: "weapon", // 武器类型
         price: 10,
         description: "购买后增加剑的耐久度，剑的耐久度降低时消失。",
     },
     {
         name: "药",
+        type: "item", // 道具类型
         price: 5,
         description: "购买后用于抵消外出历练失败时灵力清零的效果。",
     },
     {
         name: "秘笈残页",
+        type: "book", // 道具类型
         price: 20,
         description: "购买后提高点击冥想时获得的灵力值5点。",
         spiritIncrease: 5,
     },
     {
         name: "秘笈残卷",
+        type: "book", // 道具类型
         price: 50,
         description: "购买后提高点击冥想时获得的灵力值10点。",
         spiritIncrease: 10,
@@ -89,6 +93,10 @@ let playerData = {
         "秘笈残卷": 0,
         // 可以根据需要添加更多秘笈
     },
+    // 新增属性
+    weaponSlot: null, // 记录武器栏中的武器
+    itemsSlot: [], // 记录道具栏中的道具
+    backpack: [], // 背囊，用于存放额外的道具和武器
 };
 
 function resetGame() {
@@ -112,6 +120,10 @@ function resetGame() {
             "秘笈残卷": 0,
             // 可以根据需要添加更多秘笈
         },
+        // 新增属性
+        weaponSlot: null, // 记录武器栏中的武器
+        itemsSlot: [], // 记录道具栏中的道具
+        backpack: [], // 背囊，用于存放额外的道具和武器
     };
     updateUI();
     savePlayerData();
@@ -166,10 +178,21 @@ function loadPlayerData() {
 function updateUI() {
     document.getElementById("spirit").textContent = playerData.spirit;
     document.getElementById("currency").textContent = playerData.currency;
-    document.getElementById("equipment1").textContent = playerData.equipment1;
-    document.getElementById("equipment2").textContent = playerData.equipment2;
-    document.getElementById("durability1").textContent = playerData.durability1;
-    document.getElementById("durability2").textContent = playerData.durability2;
+    // document.getElementById("equipment1").textContent = playerData.equipment1;
+    // document.getElementById("equipment2").textContent = playerData.equipment2;
+    // document.getElementById("durability1").textContent = playerData.durability1;
+    // document.getElementById("durability2").textContent = playerData.durability2;
+    // 更新武器栏
+    const weaponSlotElement = document.getElementById("weaponSlot");
+    weaponSlotElement.textContent = playerData.weaponSlot ? playerData.weaponSlot : "空";
+
+    // 更新道具栏
+    const itemsSlotElement = document.getElementById("itemsSlot");
+    itemsSlotElement.textContent = playerData.itemsSlot.length > 0 ? playerData.itemsSlot.join(", ") : "空";
+
+    // 更新背囊
+    const backpackSlotElement = document.getElementById("backpackSlot");
+    backpackSlotElement.textContent = playerData.backpack.length > 0 ? playerData.backpack.join(", ") : "空";
     document.getElementById("shopCurrency").textContent = playerData.currency;
 
     const nextRealm = getNextRealm(playerData.realm);
@@ -353,30 +376,32 @@ function buyItem(itemName, price) {
         }
         playerData.currency -= price;
 
-        // 检查玩家背包中是否已经有同类型的装备，如果有则替换；如果没有则添加到空槽位
-        if (itemName === "剑") {
-            if (playerData.equipment1 === "无") {
-                playerData.equipment1 = itemName;
+        // 检查玩家背包中是否已经有同类型的装备或道具，如果有则放入背囊；如果没有则添加到空槽位
+        const item = shopItems.find((item) => item.name === itemName);
+        if (!item) {
+            alert("道具不存在！");
+            return;
+        }
+
+        if (item.type === "weapon") {
+            if (playerData.weaponSlot === null) {
+                playerData.weaponSlot = itemName;
                 playerData.durability1 = 5; // 设置剑的初始耐久度为5
-            } else if (playerData.equipment2 === "无") {
-                playerData.equipment2 = itemName;
-                playerData.durability2 = 5; // 设置剑的初始耐久度为5
             } else {
-                // 替换装备1的剑
-                playerData.equipment1 = itemName;
-                playerData.durability1 = 5; // 设置剑的初始耐久度为5
+                // 放入背囊
+                playerData.backpack.push(itemName);
             }
-        } else if (itemName === "药") {
-            if (playerData.equipment1 === "无") {
-                playerData.equipment1 = itemName;
-            } else if (playerData.equipment2 === "无") {
-                playerData.equipment2 = itemName;
+        } else if (item.type === "item") {
+            if (playerData.itemsSlot.length < 3) {
+                playerData.itemsSlot.push(itemName);
             } else {
-                // 替换装备1的药
-                playerData.equipment1 = itemName;
+                // 放入背囊
+                playerData.backpack.push(itemName);
             }
-        } else if (itemName === "秘笈残页" || itemName === "秘笈残卷") {
-            // 处理秘笈购买逻辑
+        }
+
+        // 处理秘笈购买逻辑
+        if (itemName === "秘笈残页" || itemName === "秘笈残卷") {
             const spiritIncrease = getItemSpiritIncrease(itemName);
             playerData.spiritIncreases[itemName] += spiritIncrease; // 累加购买的秘笈对灵力增加的效果
             // 增加玩家购买的秘笈数量
@@ -389,6 +414,65 @@ function buyItem(itemName, price) {
     } else {
         alert("灵石不足，购买失败！");
     }
+}
+
+
+function equipItem(itemName) {
+    const item = shopItems.find((item) => item.name === itemName);
+    if (!item) {
+        alert("道具不存在！");
+        return;
+    }
+
+    if (item.type === "weapon" && playerData.weaponSlot) {
+        alert("武器栏已有武器装备，无法再装备剑！");
+        return;
+    }
+
+    if (item.type === "item" && playerData.itemsSlot.length >= 3) {
+        alert("道具栏已满，无法再装备道具！");
+        return;
+    }
+
+    if (item.type === "weapon" && playerData.weaponSlot) {
+        playerData.backpack.push(playerData.weaponSlot);
+    } else if (item.type === "item" && playerData.itemsSlot.length >= 3) {
+        playerData.backpack.push(playerData.itemsSlot.pop());
+    }
+
+    if (item.type === "weapon") {
+        playerData.weaponSlot = itemName;
+    } else {
+        playerData.itemsSlot.push(itemName);
+    }
+
+    updateUI();
+    savePlayerData();
+}
+
+function unequipItem(itemName) {
+    const item = shopItems.find((item) => item.name === itemName);
+    if (!item) {
+        alert("道具不存在！");
+        return;
+    }
+
+    if (item.type === "weapon" && !playerData.weaponSlot) {
+        alert("武器栏没有装备剑！");
+        return;
+    } else if (item.type === "item" && !playerData.itemsSlot.includes(itemName)) {
+        alert("道具栏没有装备该物品！");
+        return;
+    }
+
+    if (item.type === "weapon") {
+        playerData.weaponSlot = null;
+    } else {
+        playerData.itemsSlot = playerData.itemsSlot.filter((item) => item !== itemName);
+    }
+
+    updateUI();
+    savePlayerData();
 }
 
 function getItemSpiritIncrease(itemName) {
