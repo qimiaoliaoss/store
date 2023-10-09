@@ -80,6 +80,7 @@ function calculateLateFee() {
 }
 
 function lowertoupper(number, recursive_depth=0) {
+  number = number.replace(/[`:_.~!@#$%^&*() \+ =<>?"{}|, \/ ;' \\ [ \] ·~！@#￥%……&*（）—— \+ ={}|《》？：“”【】、；‘’，。、]/g, '');
   let str_number = String(number);
   if (str_number.length > 4) {
     str_number = str_number.slice(-4);
