@@ -113,6 +113,7 @@ def get_target(url1):
                             new = '短链服务异常\n' + tl + '\n' + dz
                             access_token, expires_in = get_access_token(corp_id, corp_secret)
                             wechat_push_text(agent_id=agent_id, access_token=access_token, message=new)
+                            notify(new)
                         time.sleep(5)
             else:
                 print('路上过于拥堵')
@@ -121,10 +122,11 @@ def get_target(url1):
         print(result)
 
 
-def notify(tl, new):
+def notify(new):
     api = "https://sctapi.ftqq.com/" + serverchen_key + ".send"
     title = '有线报'
-    content = '%s 地址：%s' % (tl, new)
+    # content = '%s 地址：%s' % (tl, new)
+    content = new
     data = {
         "text": title,
         "desp": content
