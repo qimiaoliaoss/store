@@ -34,7 +34,7 @@ if response.status_code == 200:
     response_data = response.json()
     print(response_data)
 
-    check_list = ['蒜蓉酱', '大水', '建行', '建设银行', '电信', '移动', '工行', '工商银行', '立减金', '零元', '麦当劳', '金拱门', '麦辣', '板烧', '脆汁鸡']
+    check_list = ['大水', '建行', '建设银行', '电信', '移动', '工行', '工商银行', '立减金', '零元', '麦当劳', '金拱门', '麦辣', '板烧', '脆汁鸡']
 
     with open('xbk.txt', 'r', encoding='utf-8') as f:
         recorded_titles = set(line.strip() for line in f)
