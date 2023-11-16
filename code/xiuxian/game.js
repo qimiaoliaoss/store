@@ -57,22 +57,6 @@ const shopItems = [
   // 可以继续添加更多的商品信息
 ];
 
-const secretBooks = [
-    {
-        name: "秘笈残页",
-        price: 20,
-        spiritIncrease: 10,
-        description: "购买后每次冥想增加10点灵力。",
-    },
-    {
-        name: "秘笈残卷",
-        price: 30,
-        spiritIncrease: 20,
-        description: "购买后每次冥想增加20点灵力。",
-    },
-    // 可以根据需要添加更多秘笈
-];
-
 let playerData = {
     spirit: 0,
     currency: 0,
@@ -178,10 +162,6 @@ function loadPlayerData() {
 function updateUI() {
     document.getElementById("spirit").textContent = playerData.spirit;
     document.getElementById("currency").textContent = playerData.currency;
-    // document.getElementById("equipment1").textContent = playerData.equipment1;
-    // document.getElementById("equipment2").textContent = playerData.equipment2;
-    // document.getElementById("durability1").textContent = playerData.durability1;
-    // document.getElementById("durability2").textContent = playerData.durability2;
     // 更新武器栏
     const weaponSlotElement = document.getElementById("weaponSlot");
     weaponSlotElement.textContent = playerData.weaponSlot ? playerData.weaponSlot : "空";
@@ -224,54 +204,9 @@ function outdoorTraining() {
 
         if (chance < 0.5) {
             if (consumedSpirit >= playerData.spirit) {
-                // 检查玩家是否携带了“药”道具，如果有则询问是否使用
-                if (playerData.equipment1 === "药") {
-                    if (confirm("外出历练失败，是否消耗一份药来抵消灵力清零？")) {
-                        playerData.equipment1 = "无"; // 使用药物后，将药物从装备栏中移除
-                    } else {
-                        playerData.spirit = 0;
-                    }
-                } else {
-                    playerData.spirit = 0;
-                }
-                updateUI();
-                savePlayerData();
-                if (playerData.spirit === 0) {
-                    alert("外出历练失败，灵力消耗殆尽！");
-                }
+                handleFailedTraining();
             } else {
-                playerData.spirit -= consumedSpirit;
-
-                // 检查玩家是否携带了“剑”道具，如果有则额外增加获得的灵石数量
-                    let gainedCurrency = Math.floor(Math.random() * 6) + 5; // 获得的灵石数量在5~10之间
-                    if (playerData.equipment1 === "剑") {
-                        gainedCurrency += 5; // 剑增加额外的5个灵石
-                        // 剑的耐久度降低
-                        playerData.durability1 -= 1;
-                        // 检查剑的耐久度是否耗尽
-                        if (playerData.durability1 <= 0) {
-                            playerData.equipment1 = "无";
-                            playerData.durability1 = 0;
-                            alert("剑已损坏，需要重新购买。");
-                        }
-                    }
-                    if (playerData.equipment2 === "剑") {
-                        gainedCurrency += 5; // 剑增加额外的5个灵石
-                        // 剑的耐久度降低
-                        playerData.durability2 -= 1;
-                        // 检查剑的耐久度是否耗尽
-                        if (playerData.durability2 <= 0) {
-                            playerData.equipment2 = "无";
-                            playerData.durability2 = 0;
-                            alert("剑已损坏，需要重新购买。");
-                        }
-                    }
-
-                    playerData.currency += gainedCurrency;
-
-                updateUI();
-                savePlayerData();
-                alert(`外出历练成功！消耗了${consumedSpirit}灵力，获得了${gainedCurrency}灵石！`);
+                handleSuccessfulTraining(consumedSpirit);
             }
         } else {
             alert("外出历练没有获得任何灵石。");
@@ -280,6 +215,59 @@ function outdoorTraining() {
         alert("灵力不足，无法外出历练！");
     }
 }
+
+function handleFailedTraining() {
+    // 检查玩家是否携带了“药”道具，如果有则询问是否使用
+    if (playerData.equipment1 === "药") {
+        if (confirm("外出历练失败，是否消耗一份药来抵消灵力清零？")) {
+            playerData.equipment1 = "无"; // 使用药物后，将药物从装备栏中移除
+        } else {
+            playerData.spirit = 0;
+        }
+    } else {
+        playerData.spirit = 0;
+    }
+    updateUI();
+    savePlayerData();
+    if (playerData.spirit === 0) {
+        alert("外出历练失败，灵力消耗殆尽！");
+    }
+}
+
+function handleSuccessfulTraining(consumedSpirit) {
+    playerData.spirit -= consumedSpirit;
+
+    let gainedCurrency = Math.floor(Math.random() * 6) + 5; // 获得的灵石数量在5~10之间
+
+    // 检查玩家是否携带了“剑”道具，如果有则额外增加获得的灵石数量
+    if (playerData.equipment1 === "剑" || playerData.equipment2 === "剑") {
+        gainedCurrency += 5; // 剑增加额外的5个灵石
+        // 剑的耐久度降低
+        if (playerData.equipment1 === "剑") {
+            playerData.durability1 -= 1;
+        } else {
+            playerData.durability2 -= 1;
+        }
+        // 检查剑的耐久度是否耗尽
+        if (playerData.durability1 <= 0) {
+            playerData.equipment1 = "无";
+            playerData.durability1 = 0;
+            alert("剑已损坏，需要重新购买。");
+        }
+        if (playerData.durability2 <= 0) {
+            playerData.equipment2 = "无";
+            playerData.durability2 = 0;
+            alert("剑已损坏，需要重新购买。");
+        }
+    }
+
+    playerData.currency += gainedCurrency;
+
+    updateUI();
+    savePlayerData();
+    alert(`外出历练成功！消耗了${consumedSpirit}灵力，获得了${gainedCurrency}灵石！`);
+}
+
 
 function getNextRealm(currentRealm) {
     const realms = Object.keys(realmThresholds);
