@@ -6,7 +6,7 @@
 import re
 from datetime import datetime, time
 from chinese_calendar import is_holiday, is_workday
-from notify import serverJ
+# from notify import serverJ
 
 def check_in():
     # 定义正则表达式模式
@@ -20,8 +20,12 @@ def check_in():
         title = f"上班成功"
         content = f"匹配成功，上班时间为: {work_time}"
         print(content)
-        serverJ(title, content)
+        # serverJ(title, content)
     else:
+        title = f"❗❗❗❗打卡啊叼毛❗❗❗❗"
+        content = f"❗❗❗❗上班未打卡❗❗❗❗"
+        print(content)
+        # serverJ(title, content)
         print("匹配失败")
 
 
@@ -37,8 +41,12 @@ def check_out():
         title = f"下班成功"
         content = f"匹配成功，下班时间为: {work_time}"
         print(content)
-        serverJ(title, content)
+        # serverJ(title, content)
     else:
+        title = f"❗❗❗❗打卡啊叼毛❗❗❗❗"
+        content = f"❗❗❗❗下班未打卡❗❗❗❗"
+        print(content)
+        # serverJ(title, content)
         print("匹配失败")
 
 
