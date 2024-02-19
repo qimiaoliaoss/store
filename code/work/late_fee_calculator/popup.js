@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function calculateLateFee() {
   // 获取用户输入的日期、本金和滞纳金率
   const dateInput = document.getElementById("dateInput").value;
+  const daysOverdue = document.getElementById("daysOverdue").value;
   const principalInput = parseFloat(document.getElementById("principalInput").value);
   const lateFeeRate = parseFloat(document.getElementById("lateFeeRateInput").value);
 
@@ -44,7 +45,7 @@ function calculateLateFee() {
 
   // 初始化滞纳金和延迟天数
   let lateFee = 0;
-  let daysLate = Math.floor(delta / dayInMillis) - 15; // Subtract 15 days as the first 15 days are exempt
+  let daysLate = Math.floor(delta / dayInMillis) - daysOverdue; // Subtract 15 days as the first 15 days are exempt
 
   // 如果延迟天数大于0，则计算滞纳金
   if (daysLate > 0) {
@@ -65,7 +66,7 @@ function calculateLateFee() {
     // 创建p元素用于显示当天的日期和滞纳金金额
     const dateElement = document.createElement("p");
     // 计算当前天的日期，从开始日期后的第16天开始计算
-    const dateOfFee = new Date(startDate.getTime() + (i + 14) * dayInMillis);
+    const dateOfFee = new Date(startDate.getTime() + (i + (daysOverdue - 1)) * dayInMillis);
     // 设置p元素的文本内容，显示当天日期和滞纳金金额
     dateElement.textContent = dateOfFee.toLocaleDateString() + ": ￥" + lateFeeAmount.toFixed(2);
 
