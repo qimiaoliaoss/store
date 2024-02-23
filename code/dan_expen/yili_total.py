@@ -90,8 +90,11 @@ sys.stdout = Tee(sys.stdout, captured_output)
 
 # 输出每个账号的红包总额
 if red_packet_totals:
+    all_red = 0
     for account, total in red_packet_totals.items():
-        print(f'{current_date} 账号 {account} 总共获得了 {total} 元现金红包')
+        print(f'账号 {account} 总共获得了 {total} 元现金红包')
+        all_red += total
+    print(f'{current_date} 共收入 {all_red} 元现金红包')
 else:
     print(f'{current_date}统计失败，请检查脚本运行状态')
 
