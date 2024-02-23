@@ -49,22 +49,13 @@ def sign():
             "User-Agent": "okhttp/4.9.1",
             "Content-Length": "31"
         }
-        headers2 = {
-            "openId": "92c0c042c7abce45ad04f0b89ff6c3c1",
-            "accessToken": accessToken,
-            "timestamp": "1693917654891",
-            "sign": "e075727aa75cd6b7f3c60567bb312372",
-            "Host": "mobile-api.xgimi.com",
-            "User-Agent": "okhttp/4.9.1",
-            "Content-Length": "31"
-        }
         # 请求体参数
         data_signin = {'configNo': '2021061111211168'}
         data_getPage = {"currentPage": 1, "pageSize": 12, "viewId": "10003"}
 
         # 发送POST请求
         response_signin = requests.post(url_signin, headers=headers, data=json.dumps(data_signin))
-        response_getPage = requests.post(url_getPage, headers=headers2, data=json.dumps(data_getPage))
+        response_getPage = requests.post(url_getPage, headers=headers, data=json.dumps(data_getPage))
 
         # 输出响应内容
         res = json.loads(response_signin.content.decode())
