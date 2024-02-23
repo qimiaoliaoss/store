@@ -3,12 +3,12 @@
 # @Author : Losir
 # @FileName: jimi.py
 # @Software: PyCharm
-import datetime
 import requests
 import json
 import os
 import sys
 import io
+import time
 from notify import send
 enable_notification = 1   #0不发送通知   1发送通知
 # 只有在需要发送通知时才尝试导入notify模块
@@ -69,23 +69,19 @@ def sign():
         # 输出响应内容
         res = json.loads(response_signin.content.decode())
         res2 = json.loads(response_getPage.content.decode())
-        print('签到响应{}'.format(res))
+        # print('签到响应{}'.format(res))
         # print('个人信息响应{}'.format(res2))
         score = json.loads(res2['data']['sections'][0]['extend'])['score']
         recentSeriesTime = json.loads(res2['data']['sections'][1]['extend'])['recentSeriesTime']
-        new = '极米签到通知\n\n当前积分:{}\n连续签到天数:{}\n'.format(score, recentSeriesTime)
+        print('当前积分:{}\n连续签到天数:{}'.format(score, recentSeriesTime))
 
         if res['data']['status']:
             if res['data']['status'] == 3:
                 print('签到成功')
-                new += '签到成功'
             elif res['data']['status'] == 2:
-                print('{}今日已签到'.format(now))
-                new += '{}今日已签到'.format(now)
+                print('{}已签到'.format(current_date))
             else:
                 print('未知错误')
-                new += '未知错误\n' + res['message']
-            print(new)
         else:
             print('未知错误')
     except Exception as e:
@@ -94,9 +90,8 @@ def sign():
 
 if __name__ == '__main__':
     # 获取当前时间
-    now = datetime.datetime.now()
+    current_date = time.strftime('%Y-%m-%d', time.localtime())
     # 输出时间戳
-    print(now)
     accessToken = os.getenv('jimi_ac')
     print(accessToken)
     # 开启数据流
