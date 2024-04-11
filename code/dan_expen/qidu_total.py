@@ -7,7 +7,9 @@ import os
 import re
 import io
 import glob
+import time
 import sys
+from decimal import Decimal
 enable_notification = 1   #0不发送通知   1发送通知
 # 只有在需要发送通知时才尝试导入notify模块
 if enable_notification == 1:
@@ -32,25 +34,15 @@ class Tee:
 
 
 # 获取当前工作目录
-current_directory = os.getcwd()
-
-# 获取当前目录的父目录
-parent_directory = os.path.dirname(current_directory)
-print(f"父目录: {parent_directory}")
-
-# 假设我们要找的兄弟目录的名称是 "project2"
-sibling_directory_name = "dan_expen"
-
-# 构建兄弟目录的路径
-sibling_directory_path = os.path.join(parent_directory, sibling_directory_name)
-print(f"兄弟目录路径: {sibling_directory_path}")
+# current_directory = os.getcwd()
+current_directory = r'/ql/data/log/dan_七读小说_7/'
 
 # 获取当前日期，例如：'2024-02-21'
-# current_date = time.strftime('%Y-%m-%d', time.localtime())
-current_date = '2024-04-10'
+current_date = time.strftime('%Y-%m-%d', time.localtime())
+# current_date = '2024-04-10'
 
 # 构建日志文件名模式
-log_file_pattern = os.path.join(sibling_directory_path, f"{current_date}-15*.log")
+log_file_pattern = os.path.join(current_directory, f"{current_date}-15*.log")
 print("文件路径:{}".format(log_file_pattern))
 
 # 使用 glob 模块获取所有符合模式的日志文件
@@ -79,7 +71,7 @@ for log_file in log_files:
             for match in matches:
                 account = match[0]
                 status = match[1]
-                print(f"账号 {account}: {status}")
+                print(f"账号 {account}: {current_date}{status}")
         else:
             print("未找到匹配的内容")
 
