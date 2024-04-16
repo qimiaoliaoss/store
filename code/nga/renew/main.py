@@ -141,7 +141,7 @@ if __name__ == "__main__":
     proxyurl = os.getenv('proxyurl')
     with open(path, "r+") as f:
         compared = f.readlines()
-        print(compared)
+        # print(compared)
     # config.ini模块初始化，目录路径初始化
     config = configparser.ConfigParser()
     basedir = os.path.abspath(os.path.dirname(__file__))
