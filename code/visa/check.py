@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time : 2023/10/9 16:00
 # @Author : Losir
-# @FileName: 检查标准.py
+# @FileName: check.py
 # @Software: PyCharm
 import requests
 import json
