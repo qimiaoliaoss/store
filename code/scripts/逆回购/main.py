@@ -3,89 +3,187 @@
 # @Author : Losir
 # @FileName: main.py
 # @Software: PyCharm
-import json
-import re
+
+import tushare as ts
+import pandas as pd
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 import requests
+import time
+import chinese_calendar
 
+# 设置 Tushare API Token
+ts.set_token("")
 
-def get_reverse_repo_price():
-    url = "https://hq.stock.sohu.com/cn/810/cn_131810-1.html"
+# 配置名称和参数
+CODE_NAME = "GC001"
+CHECK_DAYS = 180
+GUI_ON = True
+PRINCIPAL = 10000  # 本金（元）
+FEE_RATE = 0.00001  # 手续费比例
+pro = ts.pro_api()
+
+def get_real_time_rate():
+    """获取实时国债逆回购利率"""
     headers = {
-        "accept": "*/*",
-        "accept-language": "zh-CN,zh;q=0.9",
-        "cookie": "gidinf=x099980109ee18695dc141c49000b73929f3229326ca; SUV=1714124625360cecjvl; BIZ_MyLBS=cn_131810%2CR-001%7C; t=1732244222653; reqtype=pc; _dfp=j0vBwXIQ/upvLCe3FFA7WbT2OomWce0MtPvLQnS20MU=",
-        "referer": "https://static.k.sohu.com/",
-        "sec-ch-ua": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": "\"Windows\"",
-        "sec-fetch-dest": "script",
-        "sec-fetch-mode": "no-cors",
-        "sec-fetch-site": "same-site",
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br, zstd",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Connection": "keep-alive",
+        "Host": "hq.sinajs.cn",
+        "Referer": "https://money.finance.sina.com.cn/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     }
-
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()  # 确保请求成功
-
-    # 使用正则提取 `fortune_hq` 函数中的 JSON 数据
-    match = re.search(r"fortune_hq\((\{.*?\})\);", response.text)
-    if not match:
-        raise ValueError("无法提取 JSON 数据")
-
-    # 清理提取到的 JSON 数据
-    json_str = match.group(1)
-
-    pattern = r'"price_A1":\["([a-zA-Z0-9_]+)","([^"]+)","([^"]+)","([^"]+)","([^"]+)","([^"]+)"\]'
-
-    matches = re.search(pattern, json_str)
-
-    if matches:
-        stock_code = matches.group(1)  # 股票代码
-        stock_name = matches.group(2)  # 股票名称
-        price = matches.group(3)  # 价格
-        change = matches.group(4)  # 涨跌
-        percent_change = matches.group(5)  # 涨幅
-        volume = matches.group(6)  # 成交量
-
-        print(f"股票代码: {stock_code}")
-        print(f"股票名称: {stock_name}")
-        print(f"价格: {price}")
-        print(f"涨跌: {change}")
-        print(f"涨幅: {percent_change}")
-        print(f"成交量: {volume}")
-    else:
-        print("未找到匹配数据")
-
-    # 修复 JSON 格式问题
-    # 1. 替换所有的单引号为双引号
-    json_str = json_str.replace("'", "\"")
-
-    # 2. 对于嵌套数组，可能会有不合法的部分，需要将其转化为合法格式
-    json_str = re.sub(r'\"(\[\s*[\d,.\"\s]*\])\"', r'\1', json_str)  # 清理嵌套的数组字符串
+    base_url = "https://hq.sinajs.cn/etag.php"
+    list_param = "sh204001"
+    timestamp = int(time.time() * 1000)
+    url = f"{base_url}?_={timestamp}&list={list_param}"
 
     try:
-        # 解析 JSON 数据
-        data = json.loads(json_str)
-
-        # 提取价格信息
-        price_info = data.get("price_A1")
-        if not price_info:
-            raise ValueError("无法找到价格信息")
-
-        price = price_info[2]  # 当前价格
-        change = price_info[4]  # 涨跌幅
-
-        return price, change
-    except json.JSONDecodeError as e:
-        raise ValueError(f"JSON 解析错误: {e}")
-
-
-# 测试函数
-if __name__ == "__main__":
-    try:
-        price, change = get_reverse_repo_price()
-        print(f"当前价格: {price}, 涨跌幅: {change}")
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200 and response.text != '':
+            data = response.text.split('="')[1].rstrip('";')
+            values = data.split(',')
+            return float(values[3])
+        else:
+            raise ValueError("未找到利率数据，请检查页面结构。")
     except Exception as e:
-        print(f"发生错误: {e}")
+        print(f"获取实时利率失败：{e}")
+        return None
+
+def calculate_return_with_holidays(principal, rate, trade_date, fee_rate):
+    """
+    计算资金占用天数和收益（考虑T+1规则、节假日、春节长假）
+    """
+    trade_date = datetime.strptime(trade_date, '%Y-%m-%d')
+
+    if trade_date.weekday() in [5, 6]:
+        raise ValueError("周六或周日不能进行国债逆回购交易！")
+
+    # 确定T+1计息日
+    settlement_date = trade_date + timedelta(days=1)
+    while chinese_calendar.is_holiday(settlement_date) or settlement_date.weekday() in [5, 6]:
+        settlement_date += timedelta(days=1)
+
+    # 获取节假日信息
+    holiday_start = None
+    for i in range(10):  # 向后检查最多10天的假期开始
+        check_date = trade_date + timedelta(days=i)
+        if chinese_calendar.is_holiday(check_date) or check_date.weekday() in [5, 6]:
+            holiday_start = check_date
+            break
+
+    if holiday_start:
+        # 获取假期结束后的第一个工作日
+        holiday_end = holiday_start
+        while chinese_calendar.is_holiday(holiday_end) or holiday_end.weekday() in [5, 6]:
+            holiday_end += timedelta(days=1)
+
+        # 倒数第二个交易日处理
+        last_working_day = holiday_start - timedelta(days=1)
+        while chinese_calendar.is_holiday(last_working_day) or last_working_day.weekday() in [5, 6]:
+            last_working_day -= timedelta(days=1)
+
+        if trade_date == last_working_day - timedelta(days=1):
+            # 如果是倒数第二个工作日
+            settlement_date = last_working_day  # 假期前的最后一个工作日
+            days = (holiday_end - settlement_date).days
+        else:
+            # 普通情况
+            days = (holiday_end - settlement_date).days + 1
+    else:
+        # 非节假日情况
+        days = 1
+
+    # 计算收益
+    gross_return = (principal * rate * days) / (365 * 100)
+    fee = principal * fee_rate
+    net_return = gross_return - fee
+
+    return net_return, gross_return, fee, days
 
 
+
+def fetch_historical_rates(code_name, start_date, end_date):
+    """获取历史利率数据"""
+    try:
+        df = pro.shibor(on=code_name, start_date=start_date, end_date=end_date)
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+        df.sort_index(inplace=True)
+        return df
+    except Exception as e:
+        print("数据获取失败，请检查 API Token 或网络连接")
+        raise e
+
+def analyze_rates(df, real_time_rate, principal, fee_rate, trade_date):
+    """分析利率数据并给出建议"""
+    mean_rate = df['on'].mean()
+    std_rate = df['on'].std()
+    threshold = mean_rate + 1.5 * std_rate
+
+    current_rate = real_time_rate if real_time_rate else df['on'].iloc[-1]
+    net_return, gross_return, fee, days = calculate_return_with_holidays(principal, current_rate, trade_date, fee_rate)
+
+    print("==== 国债逆回购利率分析 ====")
+    print(f"种类名称：{CODE_NAME}")
+    print(f"近 {CHECK_DAYS} 天平均利率：{mean_rate:.2f}%")
+    print(f"利率标准差：{std_rate:.2f}%")
+    print(f"建议买入阈值：{threshold:.2f}%")
+    print(f"当前利率：{current_rate:.2f}%")
+    print(f"资金占用天数：{days} 天")
+    print(f"理论万份收益：{gross_return:.2f} 元")
+    print(f"手续费：{fee:.2f} 元")
+    print(f"实际收益：{net_return:.2f} 元")
+
+    if current_rate > threshold:
+        suggestion = "当前利率较高，建议买入！"
+    elif current_rate > mean_rate:
+        suggestion = "当前利率较平均值略高，可以考虑买入。"
+    else:
+        suggestion = "当前利率较低，暂不买入。"
+
+    print(f"买入建议：{suggestion}")
+    return mean_rate, std_rate, threshold, suggestion
+
+def visualize_rates(df, current_rate, mean_rate, threshold):
+    """可视化利率数据"""
+    matplotlib.font_manager.fontManager.addfont('chinese.simhei.ttf')
+    matplotlib.rc('font', family='SimHei')
+    plt.figure(figsize=(12, 6))
+    plt.plot(df.index, df['on'], label="历史利率", color='blue')
+    plt.axhline(mean_rate, color='green', linestyle='--', label="平均利率")
+    plt.axhline(threshold, color='red', linestyle='--', label="建议买入阈值")
+    plt.scatter([df.index[-1]], [current_rate], color='orange', label="当前利率")
+    plt.title("国债逆回购一天期利率趋势")
+    plt.xlabel("日期")
+    plt.ylabel("利率 (%)")
+    plt.legend()
+    plt.grid()
+    plt.tight_layout()
+    plt.show()
+
+def main():
+    end_date = datetime.now().strftime('%Y%m%d')
+    start_date = (datetime.now() - timedelta(days=CHECK_DAYS)).strftime('%Y%m%d')
+    df = fetch_historical_rates(CODE_NAME, start_date, end_date)
+
+    if df.empty:
+        raise ValueError("未能获取到任何利率数据，请确认 API 设置或日期范围是否正确。")
+
+    real_time_rate = get_real_time_rate()
+    if real_time_rate is not None:
+        print(f"实时利率：{real_time_rate:.2f}%")
+    else:
+        print("无法获取实时利率，将仅使用历史数据进行分析。")
+
+    trade_date = datetime.now().strftime('%Y-%m-%d')
+    mean_rate, std_rate, threshold, suggestion = analyze_rates(df, real_time_rate, PRINCIPAL, FEE_RATE, trade_date)
+
+    if GUI_ON:
+        visualize_rates(df, real_time_rate if real_time_rate else df['on'].iloc[-1], mean_rate, threshold)
+
+if __name__ == "__main__":
+    main()
