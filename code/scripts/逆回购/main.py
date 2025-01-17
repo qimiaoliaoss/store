@@ -3,7 +3,9 @@
 # @Author : Losir
 # @FileName: main.py
 # @Software: PyCharm
-
+"""
+V1版本：根据历史收盘价计算期望利率
+"""
 import tushare as ts
 import pandas as pd
 import numpy as np
@@ -19,8 +21,8 @@ ts.set_token("")
 
 # 配置名称和参数
 CODE_NAME = "GC001"
-CHECK_DAYS = 180
-GUI_ON = True
+CHECK_DAYS = 90
+GUI_ON = False
 PRINCIPAL = 10000  # 本金（元）
 FEE_RATE = 0.00001  # 手续费比例
 pro = ts.pro_api()
