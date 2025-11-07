@@ -1,0 +1,11 @@
+# NAME: ChinaCustom
+# AUTHOR: Wans
+# REPO: https://github.com/wanswu/my-backup
+# DATE: 2025/09/09
+payload:
+  - DOMAIN-SUFFIX,portal101.cn
+  - DOMAIN-SUFFIX,javasec.org
+  - DOMAIN-SUFFIX,butian.net
+  - DOMAIN-SUFFIX,qianxin.com
+  - DOMAIN-SUFFIX,fastadmin.net
+  - DOMAIN-SUFFIX,djbh.net
