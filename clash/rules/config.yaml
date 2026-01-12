@@ -157,7 +157,7 @@ proxy-groups:
     - { name: Disney, <<: *SelectProxy, icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Disney.png }
     - { name: Emby, <<: *SelectProxy, icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Emby.png }
     - { name: Gemini, <<: *SelectProxy, icon: https://cdn.jsdelivr.net/gh/lobehub/lobe-icons@master/packages/static-png/light/gemini-color.png, include-all: true }
-    - { name: Linux Do, <<: *SelectProxy, icon: https://github.com/qimiaoliaoss/store/blob/50c17f2a925dc68eef5a528f6ae454f2674a1649/images/icon/LinuxDo.png, include-all: true }
+    - { name: Linux Do, <<: *SelectProxy, icon: https://github.com/qimiaoliaoss/store/blob/main/images/icon/LinuxDo.png, include-all: true }
     - { name: Github, <<: *SelectProxy, icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/GitHub.png }
     - { name: Google, <<: *SelectProxy, icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Google_Search.png }
     - { name: Microsoft, <<: *SelectProxy, icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Microsoft.png }
