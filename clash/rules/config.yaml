@@ -1,20 +1,6 @@
 # 订阅锚点，排除了一些节点，例如 包含剩余，官网，到期，也可以在exclude-filter添加你需要排除的节点
 Providers: &Providers { exclude-filter: "Expire|到期|剩余|Traffic|网址|官网|过期", type: http, interval: 86400, health-check: { enable: true, url: https://www.gstatic.com/generate_204, interval: 300 } }
 # 官方配置文档: https://wiki.metacubex.one/config/proxy-providers/
-proxy-providers:
-  p1:
-    <<: *Providers
-    url: https://al121.cc/#/register?code=R7vdKxbE
-    path: ./proxy_provider/p1.yaml
-    override:
-      additional-prefix: 'p1 | '  # 订阅节点前缀，方便区分该节点属于哪个订阅链接 例如`p1 | 香港🇭🇰
-
-  p2:
-    <<: *Providers
-    url: https://al121.cc/#/register?code=R7vdKxbE
-    path: ./proxy_provider/p2.yaml
-    override:
-      additional-prefix: 'p2 | '
 
 # dns配置
 dns:
