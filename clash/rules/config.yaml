@@ -251,5 +251,6 @@ rules:
     - RULE-SET,Steam,Steam
     - RULE-SET,Emby,Emby
     - RULE-SET,Hijacking,DIRECT
+    - DOMAIN-SUFFIX,hgemby.qzz.io,Emby
     # 没有匹配到规则的全部走[漏网之鱼]的这个规则
     - MATCH,漏网之鱼
