@@ -14,7 +14,7 @@ ProvidersFILE: &ProvidersFILE { exclude-filter: *FilterPP, type: file, interval:
 
 # 官方配置文档: https://wiki.metacubex.one/config/proxy-providers/
 proxy-providers:
-  main:
+  p1:
     <<: *ProvidersURL
     url: https://anyland.club/#/register?code=R7vdKxbE
     path: ./proxy_provider/main.yaml
@@ -22,7 +22,7 @@ proxy-providers:
       udp: true
       additional-prefix: '主-'
 
-  back:
+  p2:
     <<: *ProvidersFILE
     path: proxy_provider/back.yaml
     override:
