@@ -137,12 +137,12 @@ BaseFB: &BaseFB { type: fallback, interval: 300, lazy: true, hidden: true, inclu
 BaseCR: &BaseCR { type: load-balance, interval: 300, lazy: true, hidden: true, include-all: true, strategy: round-robin }
 BaseCH: &BaseCH { type: load-balance, interval: 300, lazy: true, hidden: true, include-all: true, strategy: consistent-hashing }
 
-# 代理组锚点 (已加入“自建”选项)
-SelectUL: &SelectUL { type: select, proxies: [ 自建, 香港, 台湾, 澳门, 狮城, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT ], include-all: true }
-SelectTW: &SelectTW { type: select, proxies: [ 台湾, 自建, 香港, 澳门, 狮城, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT, 手动选择 ] }
-SelectUS: &SelectUS { type: select, proxies: [ 美国, 自建, 香港, 台湾, 澳门, 狮城, 日本, 韩国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT, 手动选择 ] }
-SelectSG: &SelectSG { type: select, proxies: [ 狮城, 自建, 美国, 香港, 台湾, 澳门, 日本, 韩国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT, 手动选择 ] }
-SelectSL: &SelectSL { type: select, proxies: [ 手动选择, 自建, 香港, 台湾, 澳门, 狮城, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT ] }
+# 代理组锚点 (加入自建与家宽落地，并增加防循环过滤)
+SelectUL: &SelectUL { type: select, proxies: [ 自建, 香港, 台湾, 澳门, 狮城, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT ], include-all: true, exclude-filter: "家宽落地" }
+SelectTW: &SelectTW { type: select, proxies: [ 台湾, 家宽落地, 自建, 香港, 澳门, 狮城, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT, 手动选择 ] }
+SelectUS: &SelectUS { type: select, proxies: [ 美国, 家宽落地, 自建, 香港, 台湾, 澳门, 狮城, 日本, 韩国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT, 手动选择 ] }
+SelectSG: &SelectSG { type: select, proxies: [ 狮城, 家宽落地, 自建, 美国, 香港, 台湾, 澳门, 日本, 韩国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT, 手动选择 ] }
+SelectSL: &SelectSL { type: select, proxies: [ 手动选择, 家宽落地, 自建, 香港, 台湾, 澳门, 狮城, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 越南, 印尼, 泰国, 澳洲, 巴西, 荷兰, 土耳其, 阿根廷, 冷门节点, DIRECT, REJECT ] }
 SelectCS: &SelectCS { type: select, lazy: true, include-all: true, hidden: true }
 
 # 节点筛选锚点
@@ -166,6 +166,17 @@ FilterNL: &FilterNL "(?i)(?=.*(🇳🇱|荷兰|NL|NLD))"
 FilterTU: &FilterTU "(?i)(?=.*(🇹🇷|土耳其|TUR|turkey))"
 FilterAR: &FilterAR "(?i)(?=.*(🇦🇷|阿根廷|ARG|argentina))"
 FilterZJ: &FilterZJ "(?i)(自建)" # 新增自建筛选正则
+
+# 代理节点: 家宽落地
+proxies:
+  - name: "家宽落地"
+    type: socks5
+    server: "proxy.global.ip2up.com"
+    port: 12347
+    username: "JyKfF7WUB-res-us"
+    password: "BKh54y"
+    udp: true
+    dialer-proxy: 手动选择
 
 # 代理组
 proxy-groups:
@@ -220,7 +231,7 @@ proxy-groups:
   - { name: 荷兰,       <<: *SelectCS, filter: *FilterNL, proxies: [ 荷兰自动, 荷兰-回退, 荷兰均衡-散列, 荷兰均衡-轮询 ], icon: https://fastly.jsdelivr.net/gh/0xWans/Qure@master/IconSet/Color/Netherlands.png }
   - { name: 土耳其,     <<: *SelectCS, filter: *FilterTU, proxies: [ 土耳其自动, 土耳其-回退, 土耳其均衡-散列, 土耳其均衡-轮询 ], icon: https://fastly.jsdelivr.net/gh/0xWans/Qure@master/IconSet/Color/Turkey.png }
   - { name: 阿根廷,     <<: *SelectCS, filter: *FilterAR, proxies: [ 阿根廷自动, 阿根廷-回退, 阿根廷均衡-散列, 阿根廷均衡-轮询 ], icon: https://fastly.jsdelivr.net/gh/0xWans/Qure@master/IconSet/Color/Argentina.png }
-  - { name: 冷门节点,   <<: *BaseUT, filter: '(?i)^(?!.*(香港|台湾|日本|韩国|新加坡|美国|英国|德国|法国|印度|泰国|越南|印度|澳大利亚|巴西|港|台|日|韩|新|美|英|德|法|印|泰|越|尼|澳|巴|hk|tw|jp|kr|sg|us|uk|de|fr|in|th|vn|id|au|br)).*', icon: https://fastly.jsdelivr.net/gh/0xWans/Qure@master/IconSet/Color/Global.png }
+  - { name: 冷门节点,   <<: *BaseUT, filter: '(?i)^(?!.*(家宽落地|香港|台湾|日本|韩国|新加坡|美国|英国|德国|法国|印度|泰国|越南|印度|澳大利亚|巴西|港|台|日|韩|新|美|英|德|法|印|泰|越|尼|澳|巴|hk|tw|jp|kr|sg|us|uk|de|fr|in|th|vn|id|au|br)).*', icon: https://fastly.jsdelivr.net/gh/0xWans/Qure@master/IconSet/Color/Global.png }
 
   # ===================== 地区分组(自动测速+隐藏) =====================
   - { name: 自建自动,       <<: *BaseUT, filter: *FilterZJ, icon: https://fastly.jsdelivr.net/gh/0xWans/Qure@master/IconSet/Color/Server.png }
