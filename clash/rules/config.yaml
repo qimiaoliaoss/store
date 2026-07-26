@@ -123,11 +123,11 @@ external-ui-name: zashboard
 external-ui-url: "https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip"
 
 # 代理组锚点，是为了减少重复配置
-SelectALL: &SelectALL { type: url-test, proxies: [ 香港, 澳门, 台湾, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, 自建, DIRECT, REJECT ], hidden: true, include-all: true }
-SelectAUTO: &SelectAUTO { type: select, proxies: [ 自动选择, 香港, 澳门, 台湾, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, 自建, DIRECT, REJECT ], disable-udp: false }
+SelectALL: &SelectALL { type: url-test, proxies: [ 香港, 澳门, 台湾, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, 自建, VMISS, DIRECT, REJECT ], hidden: true, include-all: true }
+SelectAUTO: &SelectAUTO { type: select, proxies: [ 自动选择, 香港, 澳门, 台湾, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, 自建, VMISS, DIRECT, REJECT ], disable-udp: false }
 SelectTW: &SelectTW { type: select, proxies: [ 台湾, 手动选择, 香港, 澳门, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, DIRECT, REJECT ], disable-udp: false }
 SelectDirect: &SelectDirect { type: select, proxies: [ DIRECT, REJECT, 手动选择, 香港, 澳门, 台湾, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, REJECT ], disable-udp: false }
-SelectProxy: &SelectProxy { type: select, proxies: [ 手动选择, 香港, 澳门, 台湾, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, 自建, DIRECT, REJECT ], disable-udp: false }
+SelectProxy: &SelectProxy { type: select, proxies: [ 手动选择, 香港, 澳门, 台湾, 日本, 韩国, 美国, 英国, 德国, 法国, 印度, 印尼, 越南, 泰国, 澳洲, 巴西, 荷兰, 其他, 土耳其, 阿根廷, 新加坡, 自建, VMISS, DIRECT, REJECT ], disable-udp: false }
 # hidden: true 是为了隐藏地区分组，有需要显示出来的佬友可以删除
 UrlTest: &UrlTest { type: url-test, interval: 300, tolerance: 50, url: 'https://www.gstatic.com/generate_204', hidden: true, include-all: true, disable-udp: false }
 Fallback: &Fallback { type: fallback, interval: 300, tolerance: 50, url: 'https://www.gstatic.com/generate_204', hidden: true, include-all: true, disable-udp: false }
@@ -179,8 +179,9 @@ proxy-groups:
     - { name: 阿根廷, <<: *UrlTest, filter: 🇦🇷|阿根廷|ARG|Argentina|argentina, icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Argentina.png }
     - { name: 新加坡, <<: *UrlTest, filter: 🇸🇬|新加坡|狮城|新|SG|SGP|Singapore|singapore, icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Singapore.png }
     - { name: 自建, <<: *UrlTest, filter: '自建', icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Server.png }
+    - { name: VMISS, <<: *UrlTest, filter: '(?i)VMISS', icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Server.png }
     # 除了常用的地区，其他地区都放这里
-    - { name: 其他, <<: *UrlTest, filter: '(?i)^(?!.*(香港|台湾|日本|韩国|新加坡|美国|英国|德国|法国|印度|泰国|越南|印尼|澳大利亚|巴西|港|台|日|韩|新|美|英|德|法|印|泰|越|尼|澳|巴|hk|tw|jp|kr|sg|us|uk|de|fr|in|th|vn|id|au|br)).*', icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png }
+    - { name: 其他, <<: *UrlTest, filter: '(?i)^(?!.*(香港|台湾|日本|韩国|新加坡|美国|英国|德国|法国|印度|泰国|越南|印尼|澳大利亚|巴西|港|台|日|韩|新|美|英|德|法|印|泰|越|尼|澳|巴|hk|tw|jp|kr|sg|us|uk|de|fr|in|th|vn|id|au|br|VMISS|自建)).*', icon: https://cdn.jsdelivr.net/gh/Koolson/Qure@master/IconSet/Color/Global.png }
 
 # 规则锚点，是为了减少重复配置
 rule-anchor:
