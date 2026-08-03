@@ -201,7 +201,6 @@ rule-providers:
     Gemini: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Gemini/Gemini.yaml }
     Github: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GitHub/GitHub.yaml }
     Google: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Google/Google.yaml }
-    Global: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Global/Global_Classical.yaml }
     Hijacking: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Hijacking/Hijacking.yaml }
     Lan: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Lan/Lan_No_Resolve.yaml }
     Microsoft: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Microsoft/Microsoft.yaml }
@@ -216,6 +215,7 @@ rule-providers:
     Telegram: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Telegram/Telegram.yaml }
     YouTube: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/YouTube/YouTube.yaml }
     DNSLeak: { <<: *ClassicalYaml, url: https://fastly.jsdelivr.net/gh/0xWans/my-backup@main/clash/rules/DNSLeak.yaml }
+    Global: { <<: *ClassicalYaml, url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Global/Global_Classical.yaml }
 
 # 官方配置文档: https://wiki.metacubex.one/config/rules/
 rules:
@@ -236,7 +236,6 @@ rules:
     - RULE-SET,Telegram,Telegram
     - RULE-SET,Gemini,Gemini
     - RULE-SET,Google,Google
-    - RULE-SET,Global,手动选择
     - RULE-SET,Github,Github
     - RULE-SET,YouTube,YouTube
     - RULE-SET,BiliBili,BiliBili
@@ -253,6 +252,7 @@ rules:
     - RULE-SET,Steam,Steam
     - RULE-SET,Emby,Emby
     - RULE-SET,Hijacking,DIRECT
+    - RULE-SET,Global,手动选择
     - DOMAIN-SUFFIX,hgemby.qzz.io,Emby
     # 没有匹配到规则的全部走[漏网之鱼]的这个规则
     - MATCH,漏网之鱼
